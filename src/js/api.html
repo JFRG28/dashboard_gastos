@@ -1,0 +1,8 @@
+<script>
+  const API = {
+    getOptions: (cb) => google.script.run.withSuccessHandler(cb).getFormOptions(),
+    getTable: (name, cb) => google.script.run.withSuccessHandler(cb).getSheetTable(name),
+    save: (data, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).registrarGasto(data),
+    update: (name, idx, data, cb) => google.script.run.withSuccessHandler(cb).updateRowData(name, idx, data)
+  };
+</script>

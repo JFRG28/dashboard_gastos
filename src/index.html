@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <?!= include('css/styles'); ?>
+</head>
+<body class="py-4">
+  <nav class="navbar navbar-expand navbar-dark bg-primary sticky-top mb-3">
+    <div class="container-fluid">
+      <div class="navbar-nav w-100 justify-content-around small">
+        <a class="nav-link active" onclick="nav('registro', this)">📝 Registro</a>
+        <a class="nav-link" onclick="nav('unificado_v4', this)">📊 Unificado</a>
+        <a class="nav-link" onclick="nav('cálculos', this)">📈 Cálculos</a>
+        <a class="nav-link" onclick="nav('balance', this)">💰 Balance</a>
+        <a class="nav-link" onclick="nav('deuda', this)">💳 Deuda</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid">
+    <div id="sec-registro" class="content-section">
+      <?!= include('form_registro'); ?>
+    </div>
+    <div id="sec-unificado_v4" class="content-section d-none"><div class="table-container" id="tab-unificado_v4"></div></div>
+    <div id="sec-cálculos" class="content-section d-none"><div class="table-container" id="tab-cálculos"></div></div>
+    <div id="sec-balance" class="content-section d-none"><div class="table-container" id="tab-balance"></div></div>
+    <div id="sec-deuda" class="content-section d-none"><div class="table-container" id="tab-deuda"></div></div>
+  </div>
+
+  <?!= include('modal_edicion'); ?>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <?!= include('js/api'); ?>
+  <?!= include('js/tables'); ?>
+  <?!= include('js/ui'); ?>
+</body>
+</html>

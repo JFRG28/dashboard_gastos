@@ -1,0 +1,71 @@
+<script>
+  let currentEdit = { sheet: '', index: 0 };
+
+  function loadTable(name) {
+    const cont = document.getElementById('tab-' + name);
+    cont.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>';
+    API.getTable(name, data => {
+      let html = '<table class="table table-sm table-striped table-bordered table-hover small"><thead>';
+      data.forEach((row, i) => {
+        if (i === 0) return; // Fila vacía inicial
+        html += '<tr>';
+        if (i === 1) {
+          html += '<th class="table-dark text-center">Acción</th>';
+          row.forEach(c => html += `<th class="table-dark">${c}</th>`);
+          html += '</thead><tbody>';
+        } else {
+          const json = JSON.stringify(row).replace(/"/g, '&quot;');
+          html += `<td class="col-accion" onclick="openEdit('${name}',${i},${json})"><i class="fa-solid fa-pencil"></i></td>`;
+          row.forEach(c => html += `<td>${c}</td>`);
+          html += '</tr>';
+        }
+      });
+      cont.innerHTML = html + '</tbody></table>';
+    });
+  }
+
+  function openEdit(sheet, idx, row) {
+    if (sheet === 'cálculos') return alert("Solo lectura");
+    currentEdit = { sheet, index: idx };
+    const body = document.getElementById('editModalBody');
+    body.innerHTML = '';
+    const labels = ["ID", "Concepto", "Monto", "Tipo", "Pago", "Mes", "Año", "Cargo", "Pago", "Categoría", "No Mens", "Total", "Tag", "Divide", "Abrev"];
+    
+    row.forEach((v, i) => {
+      let input = `<input class="form-control edit-input" value="${v}">`;
+      if (sheet === 'unificado_v4') {
+        if (i === 0) input = `<input class="form-control edit-input" value="${v}" readonly>`;
+        else if (i === 3) input = createSel(opcionesGlobales.tiposGasto, v);
+        else if (i === 4) input = createSel(opcionesGlobales.formasPago, v);
+        else if (i === 7 || i === 8) input = `<input type="date" class="form-control edit-input" value="${fmtDate(v)}">`;
+        else if (i === 9) input = createSel(opcionesGlobales.categorias, v);
+        else if (i === 12) input = createSel(opcionesGlobales.tags, v);
+        else if (i === 13) input = createSel(opcionesGlobales.seDivide, v);
+        else if (i === 14) input = createSel(opcionesGlobales.abrevs, v);
+      }
+      body.innerHTML += `<div class="mb-2"><label class="form-label small mb-0">${labels[i]||'Col '+i}</label>${input}</div>`;
+    });
+    new bootstrap.Modal(document.getElementById('editModal')).show();
+  }
+
+  function createSel(opts, val) {
+    let s = '<select class="form-select edit-input">';
+    opts.forEach(o => s += `<option value="${o}" ${o==val?'selected':''}>${o}</option>`);
+    return s + '</select>';
+  }
+
+  function fmtDate(d) {
+    if(!d || !d.includes('/')) return d;
+    const p = d.split('/');
+    return `${p[2]}-${p[0].padStart(2,'0')}-${p[1].padStart(2,'0')}`;
+  }
+
+  function saveChange() {
+    const data = Array.from(document.querySelectorAll('.edit-input')).map(i => i.value);
+    API.update(currentEdit.sheet, currentEdit.index, data, res => {
+      alert(res);
+      bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+      loadTable(currentEdit.sheet);
+    });
+  }
+</script>

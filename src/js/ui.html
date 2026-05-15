@@ -1,0 +1,57 @@
+<script>
+  let opcionesGlobales = null;
+
+  window.onload = () => {
+    const hoy = new Date();
+    document.getElementById('fecha_cargo').value = new Date(hoy - (hoy.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+    API.getOptions(opts => { opcionesGlobales = opts; llenarSelectores(opts); });
+  };
+
+  function llenarSelectores(opts) {
+    const map = {'tipo_gasto': opts.tiposGasto, 'forma_pago': opts.formasPago, 'tag': opts.tags, 'categoria': opts.categorias, 'se_divide': opts.seDivide, 'gasto_x_mes': opts.abrevs};
+    for (let id in map) {
+      const el = document.getElementById(id);
+      if (!el) continue;
+      el.innerHTML = '';
+      map[id].forEach(o => el.add(new Option(o, o)));
+    }
+    actualizarAbrev();
+  }
+
+  function nav(section, el) {
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.content-section').forEach(s => s.classList.add('d-none'));
+    document.getElementById('sec-' + section).classList.remove('d-none');
+    if (section !== 'registro') loadTable(section);
+  }
+
+  function submitForm() {
+    const form = document.getElementById('formGasto');
+    const out = document.getElementById('output');
+    if (!form.checkValidity()) return form.reportValidity();
+    
+    const data = {};
+    new FormData(form).forEach((v, k) => data[k] = v);
+    document.getElementById('btnSubmit').disabled = true;
+    out.innerText = "Enviando...";
+
+    API.save(data, res => {
+      out.innerText = res;
+      form.reset();
+      window.onload();
+      document.getElementById('btnSubmit').disabled = false;
+    }, err => { alert(err); document.getElementById('btnSubmit').disabled = false; });
+  }
+
+  function toggleMensualidades() {
+    const isMens = ['MSI', 'MCI'].includes(document.getElementById('tipo_gasto').value);
+    document.getElementById('mensualidadesGroup').classList.toggle('hidden-field', !isMens);
+  }
+
+  function actualizarAbrev() {
+    const f = new Date(document.getElementById('fecha_cargo').value + "T00:00:00");
+    const meses = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
+    document.getElementById('gasto_x_mes').value = meses[f.getMonth()];
+  }
+</script>
