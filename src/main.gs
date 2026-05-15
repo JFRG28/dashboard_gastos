@@ -19,8 +19,8 @@ function getFormOptions() {
     const row = data[i];
     if (row[1])  options.tiposGasto.push(row[1]);
     if (row[3])  options.formasPago.push(row[3]);
-    if (row[8])  options.tags.push(row[8]);
-    if (row[11]) options.categorias.push(row[11]);
+    if (row[9])  options.tags.push(row[9]);
+    if (row[12]) options.categorias.push(row[12]);
     if (row[14]) options.seDivide.push(row[14]);
     if (row[16]) options.abrevs.push(row[16]);
   }
