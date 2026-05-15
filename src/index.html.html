@@ -27,9 +27,8 @@
           </div>
           <div class="col">
             <label class="form-label">Categoría</label>
-            <select name="categoria" class="form-select">
-              <option value="E">Egreso (E)</option>
-              <option value="I">Ingreso (I)</option>
+            <select name="categoria" id="categoria" class="form-select">
+              <option value="">Cargando opciones...</option>
             </select>
           </div>
         </div>
@@ -40,21 +39,9 @@
             <input type="date" name="fecha_cargo" id="fecha_cargo" class="form-control" required>
           </div>
           <div class="col-6">
-            <label class="form-label">Gasto x Mes (Abrev)</label>
+            <label class="form-label">Gasto x Mes</label>
             <select name="gasto_x_mes" id="gasto_x_mes" class="form-select">
-              <option value="ENE">ENE</option>
-              <option value="FEB">FEB</option>
-              <option value="MAR">MAR</option>
-              <option value="ABR">ABR</option>
-              <option value="MAY">MAY</option>
-              <option value="JUN">JUN</option>
-              <option value="JUL">JUL</option>
-              <option value="AGO">AGO</option>
-              <option value="SEP">SEP</option>
-              <option value="OCT">OCT</option>
-              <option value="NOV">NOV</option>
-              <option value="DIC">DIC</option>
-              <option value="NA">NA</option>
+              <option value="">Cargando opciones...</option>
             </select>
           </div>
           <div class="col">
@@ -67,10 +54,7 @@
           <div class="col">
             <label class="form-label">Tipo Gasto</label>
             <select name="tipo_gasto" id="tipo_gasto" class="form-select" onchange="toggleMensualidades()">
-              <option value="Variable">Variable</option>
-              <option value="MSI">MSI</option>
-              <option value="MCI">MCI</option>
-              <option value="Fijo">Fijo</option>
+              <option value="">Cargando opciones...</option>
             </select>
           </div>
         </div>
@@ -88,35 +72,22 @@
 
         <div class="mb-3">
           <label class="form-label">Forma de Pago</label>
-          <select name="forma_pago" class="form-select">
-            <option value="Klar Platino">Klar Platino</option>
-            <option value="BBVA Oro">BBVA Oro</option>
-            <option value="Mercado Pago">Mercado Pago</option>
-            <option value="Santander Like U">Santander Like U</option>
-            <option value="Efectivo">Efectivo</option>
-            <option value="Transferencia">Transferencia</option>
-            <option value="Santander Free">Santander Free</option>
-            <option value="TDD Nu">TDD Nu</option>
-            <option value="TDC Nu">TDC Nu</option>
-            <option value="Liverpool">Liverpool</option>
-            <option value="Santander Nómina">Santander Nómina</option>
+          <select name="forma_pago" id="forma_pago" class="form-select">
+            <option value="">Cargando opciones...</option>
           </select>
         </div>
 
         <div class="row mb-4">
           <div class="col">
             <label class="form-label">Tag (Lulú)</label>
-            <select name="tag" class="form-select">
-              <option value="NA">NA</option>
-              <option value="MD">MD (Me debe Lulú)</option>
-              <option value="D">D (Debo a Lulú)</option>
+            <select name="tag" id="tag" class="form-select">
+              <option value="">Cargando opciones...</option>
             </select>
           </div>
           <div class="col">
             <label class="form-label">¿Se divide?</label>
-            <select name="se_divide" class="form-select">
-              <option value="No">No</option>
-              <option value="Sí">Sí</option>
+            <select name="se_divide" id="se_divide" class="form-select">
+              <option value="">Cargando opciones...</option>
             </select>
           </div>
         </div>
@@ -130,6 +101,57 @@
   </div>
 
   <script>
+
+    /// Al cargar la página, inicializamos con la fecha de hoy
+    window.onload = function() {
+      // 1. Configuración de fecha inicial
+      const hoy = new Date();
+      // Ajuste de zona horaria local para el input date
+      const offset = hoy.getTimezoneOffset() * 60000;
+      const localISOTime = (new Date(hoy - offset)).toISOString().slice(0, 10);
+
+      document.getElementById('fecha_cargo').value = localISOTime;
+
+      // 2. Carga dinámica de la Capa de Datos
+      google.script.run
+      .withSuccessHandler(llenarFormulario)
+      .withFailureHandler(err => console.error("Error cargando listas:", err))
+      .getFormOptions();
+    };
+
+    /**
+    * Inyecta las opciones en cada elemento select del DOM.
+    */
+    function llenarFormulario(opts) {
+      // Mapeo: ID del HTML vs Llave del objeto del backend
+      const mapping = {
+        'tipo_gasto': opts.tiposGasto,
+        'forma_pago': opts.formasPago,
+        'tag': opts.tags,
+        'categoria': opts.categorias,
+        'se_divide': opts.seDivide,
+        'gasto_x_mes': opts.abrevs
+      };
+
+      for (const id in mapping) {
+        const select = document.getElementById(id);
+        if (!select) continue;
+
+        // Limpiar opciones previas (como el "Cargando...")
+        select.innerHTML = '';
+
+        mapping[id].forEach(val => {
+          const option = document.createElement('option');
+          option.value = val;
+          option.textContent = val;
+          select.appendChild(option);
+        });
+      }
+
+      // Una vez llenos los selectores, calculamos la abreviatura por defecto
+      actualizarAbrev();
+    }
+
     // Seteo de fecha default
     document.getElementById('fecha_cargo').valueAsDate = new Date();
 
@@ -152,16 +174,7 @@
       selectAbrev.value = mesesAbrev[fecha.getMonth()];
     }
 
-    /// Al cargar la página, inicializamos con la fecha de hoy
-    window.onload = function() {
-      const hoy = new Date();
-      // Ajuste de zona horaria local para el input date
-      const offset = hoy.getTimezoneOffset() * 60000;
-      const localISOTime = (new Date(hoy - offset)).toISOString().slice(0, 10);
-
-      document.getElementById('fecha_cargo').value = localISOTime;
-      actualizarAbrev();
-    };
+    
 
     function submitForm() {
       const btn = document.getElementById('submitBtn');

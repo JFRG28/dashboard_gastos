@@ -4,6 +4,40 @@ function doGet() {
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
+/**
+ * Obtiene las opciones de configuración desde la hoja 'listas'
+ * para dinamizar el formulario.
+ */
+function getFormOptions() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('listas');
+  const data = sheet.getDataRange().getValues();
+  
+  // Objeto para clasificar las listas
+  const options = {
+    tiposGasto: [],
+    formasPago: [],
+    tags: [],
+    categorias: [],
+    seDivide: [],
+    abrevs: []
+  };
+
+  // Recorremos las filas saltando el encabezado (fila 0)
+  // Basado en los índices de tu archivo CSV:
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    if (row[1])  options.tiposGasto.push(row[1]);  // Col B: Fijo, MCI, MSI...
+    if (row[3])  options.formasPago.push(row[3]);  // Col D: BBVA Oro, Klar...
+    if (row[8])  options.tags.push(row[8]);        // Col I: Debo a Lulú, MD...
+    if (row[11]) options.categorias.push(row[11]); // Col L: Ingreso, Egreso
+    if (row[14]) options.seDivide.push(row[14]);   // Col O: Sí, No
+    if (row[16]) options.abrevs.push(row[16]);     // Col Q: ENE, FEB, MAR...
+  }
+
+  return options;
+}
+
 function registrarGasto(form) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('unificado_v4');
