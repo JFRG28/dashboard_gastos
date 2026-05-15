@@ -75,11 +75,11 @@
         <div id="mensualidadesGroup" class="row mb-3 hidden-field">
           <div class="col">
             <label class="form-label">Mes Actual (#)</label>
-            <input type="number" name="no_mens" class="form-control" value="0">
+            <input type="number" name="no_mens" class="form-control" value="1" min="1" max="48">
           </div>
           <div class="col">
             <label class="form-label">Total Meses</label>
-            <input type="number" name="total_meses" class="form-control" value="0">
+            <input type="number" name="total_meses" class="form-control" value="1" min="1" max="48">
           </div>
         </div>
 
@@ -260,13 +260,36 @@
     function submitForm() {
       const btn = document.getElementById('submitBtn');
       const out = document.getElementById('output');
+      const form = document.getElementById('mainForm');
+
+      const data = {};
+      let hasEmptyFields = false;
+      
+      new FormData(form).forEach((v, k) => {
+        data[k] = v;
+        if (k !== 'fecha_pago' && String(v).trim() === '') {
+          hasEmptyFields = true;
+        }
+      });
+
+      if (hasEmptyFields || !form.checkValidity()) {
+        form.reportValidity();
+        out.className = "mt-3 text-center text-danger";
+        out.innerText = "Error: Todos los campos son obligatorios excepto Fecha Pago.";
+        return;
+      }
+
       btn.disabled = true;
       out.className = "mt-3 text-center text-muted";
       out.innerText = "Enviando a Google Sheets...";
 
-      const form = document.getElementById('mainForm');
-      const data = {};
-      new FormData(form).forEach((v, k) => data[k] = v);
+      // Validación de mensualidades
+      if (parseInt(data.no_mens) > parseInt(data.total_meses)) {
+        out.className = "mt-3 text-center text-danger";
+        out.innerText = "Error: El mes actual no puede ser mayor al total de meses.";
+        btn.disabled = false;
+        return;
+      }
 
       google.script.run
         .withSuccessHandler(res => {
