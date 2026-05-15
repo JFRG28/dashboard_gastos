@@ -23,9 +23,13 @@ function getFormOptions() {
     abrevs: []
   };
 
-  // Recorremos las filas saltando el encabezado (fila 0)
-  // Basado en los índices de tu archivo CSV:
-  for (let i = 1; i < data.length; i++) {
+  /**
+   * AJUSTE TÉCNICO:
+   * i = 0 -> Fila vacía
+   * i = 1 -> Encabezados ("tipo", "forma", etc.)
+   * i = 2 -> Primeros datos reales ("Fijo", "BBVA Oro", "Ingreso"...)
+   */
+  for (let i = 2; i < data.length; i++) {
     const row = data[i];
     if (row[1])  options.tiposGasto.push(row[1]);  // Col B: Fijo, MCI, MSI...
     if (row[3])  options.formasPago.push(row[3]);  // Col D: BBVA Oro, Klar...
