@@ -14,9 +14,11 @@
     <div class="container-fluid">
       <div class="navbar-nav w-100 justify-content-around">
         <a class="nav-link active" onclick="nav('registro', this)">📝 Registro</a>
+        <a class="nav-link" onclick="nav('unificado_v4', this)">📊 Dashboard</a>
+        <a class="nav-link" onclick="nav('cálculos', this)">📊 Cálculos</a>
         <a class="nav-link" onclick="nav('balance', this)">💰 Balance</a>
         <a class="nav-link" onclick="nav('deuda', this)">💳 Deuda</a>
-        <a class="nav-link" onclick="nav('cálculos', this)">📊 Cálculos</a>
+        
       </div>
     </div>
   </nav>
@@ -29,17 +31,17 @@
       <form id="mainForm">
         
         <div class="mb-3">
-          <label class="form-label font-weight-bold">Concepto</label>
+          <label class="form-label font-weight-bold">* Concepto</label>
           <input type="text" name="concepto" class="form-control" placeholder="Descripción del gasto" required>
         </div>
         
         <div class="row mb-3">
           <div class="col">
-            <label class="form-label">Monto</label>
+            <label class="form-label">* Monto</label>
             <input type="number" step="0.01" name="monto" class="form-control" required>
           </div>
           <div class="col">
-            <label class="form-label">Categoría (E=Egreso, I=Ingreso)</label>
+            <label class="form-label">* Categoría (E=Egreso, I=Ingreso)</label>
             <select name="categoria" id="categoria" class="form-select">
               <option value="">Cargando opciones...</option>
             </select>
@@ -48,11 +50,11 @@
 
         <div class="row mb-3">
           <div class="col-6">
-            <label class="form-label">Fecha Cargo</label>
+            <label class="form-label">* Fecha Cargo</label>
             <input type="date" name="fecha_cargo" id="fecha_cargo" class="form-control" required>
           </div>
           <div class="col-6">
-            <label class="form-label">Gasto x Mes</label>
+            <label class="form-label">* Gasto x Mes</label>
             <select name="gasto_x_mes" id="gasto_x_mes" class="form-select">
               <option value="">Cargando opciones...</option>
             </select>
@@ -65,7 +67,7 @@
 
         <div class="row mb-3">
           <div class="col">
-            <label class="form-label">Tipo Gasto</label>
+            <label class="form-label">* Tipo Gasto</label>
             <select name="tipo_gasto" id="tipo_gasto" class="form-select" onchange="toggleMensualidades()">
               <option value="">Cargando opciones...</option>
             </select>
@@ -74,17 +76,17 @@
 
         <div id="mensualidadesGroup" class="row mb-3 hidden-field">
           <div class="col">
-            <label class="form-label">Mes Actual (#)</label>
+            <label class="form-label">* Mes Actual (#)</label>
             <input type="number" name="no_mens" class="form-control" value="1" min="1" max="48">
           </div>
           <div class="col">
-            <label class="form-label">Total Meses</label>
+            <label class="form-label">* Total Meses</label>
             <input type="number" name="total_meses" class="form-control" value="1" min="1" max="48">
           </div>
         </div>
 
         <div class="mb-3">
-          <label class="form-label">Forma de Pago</label>
+          <label class="form-label">* Forma de Pago</label>
           <select name="forma_pago" id="forma_pago" class="form-select">
             <option value="">Cargando opciones...</option>
           </select>
@@ -92,13 +94,13 @@
 
         <div class="row mb-4">
           <div class="col">
-            <label class="form-label">Tag (NA=No Aplica, D=Debo a Lulú, MD=Me Debe Lulú)</label>
+            <label class="form-label">* Tag (NA=No Aplica, D=Debo a Lulú, MD=Me Debe Lulú)</label>
             <select name="tag" id="tag" class="form-select">
               <option value="">Cargando opciones...</option>
             </select>
           </div>
           <div class="col">
-            <label class="form-label">¿Se divide?</label>
+            <label class="form-label">* ¿Se divide?</label>
             <select name="se_divide" id="se_divide" class="form-select">
               <option value="">Cargando opciones...</option>
             </select>
@@ -114,16 +116,20 @@
       </div>
     </div>
 
+    <div id="sec-unificado_v4" class="content-section d-none">
+      <div class="table-container" id="tab-unificado_v4"></div>
+    </div>
+
+    <div id="sec-cálculos" class="content-section d-none">
+      <div class="table-container" id="tab-cálculos"></div>
+    </div>
+
     <div id="sec-balance" class="content-section d-none">
       <div class="table-container" id="tab-balance"></div>
     </div>
 
     <div id="sec-deuda" class="content-section d-none">
       <div class="table-container" id="tab-deuda"></div>
-    </div>
-
-    <div id="sec-cálculos" class="content-section d-none">
-      <div class="table-container" id="tab-cálculos"></div>
     </div>
   </div>
 
