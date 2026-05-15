@@ -5,6 +5,22 @@ function doGet() {
 }
 
 /**
+ * Obtiene todos los valores de una hoja tal cual se muestran en la UI.
+ */
+function getSheetTable(sheetName) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(sheetName);
+    if (!sheet) return null;
+
+    // Usamos getDisplayValues para mantener el formato de moneda y fechas de tu Excel
+    return sheet.getDataRange().getDisplayValues();
+  } catch (e) {
+    return "Error: " + e.toString();
+  }
+}
+
+/**
  * Obtiene las opciones de configuración desde la hoja 'listas'
  * para dinamizar el formulario.
  */
@@ -82,4 +98,20 @@ function registrarGasto(form) {
 
   sheet.appendRow(nuevaFila);
   return "Registro #" + nextId + " guardado correctamente en unificado_v4.";
+}
+
+/**
+ * Obtiene los datos de una hoja para mostrarlos en la UI.
+ */
+function getSheetTable(sheetName) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(sheetName) || ss.getSheetByName(sheetName.charAt(0).toUpperCase() + sheetName.slice(1));
+    if (!sheet) return "No se encontró la hoja: " + sheetName;
+    
+    // Obtenemos los valores visibles de la tabla
+    return sheet.getDataRange().getDisplayValues();
+  } catch (e) {
+    return e.toString();
+  }
 }
