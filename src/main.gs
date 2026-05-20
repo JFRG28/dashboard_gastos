@@ -27,14 +27,6 @@ function getFormOptions() {
   return options;
 }
 
-function getSheetTable(sheetName) {
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getSheetByName(sheetName);
-    if (!sheet) return null;
-    return sheet.getDataRange().getDisplayValues();
-  } catch (e) { return "Error: " + e.toString(); }
-}
 
 function registrarGasto(form) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -55,11 +47,4 @@ function registrarGasto(form) {
 
   sheet.appendRow(nuevaFila);
   return "Registro #" + nextId + " guardado correctamente.";
-}
-
-function updateRowData(sheetName, rowIndex, newDataArray) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
-  const targetRow = parseInt(rowIndex) + 1;
-  sheet.getRange(targetRow, 1, 1, newDataArray.length).setValues([newDataArray]);
-  return "Registro actualizado en " + sheetName;
 }

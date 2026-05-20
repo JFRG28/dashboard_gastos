@@ -18,13 +18,6 @@
     actualizarAbrev();
   }
 
-  function nav(section, el) {
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-    el.classList.add('active');
-    document.querySelectorAll('.content-section').forEach(s => s.classList.add('d-none'));
-    document.getElementById('sec-' + section).classList.remove('d-none');
-    if (section !== 'registro') loadTable(section);
-  }
 
   function submitForm() {
     const form = document.getElementById('formGasto');
