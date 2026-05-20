@@ -44,7 +44,7 @@ function registrarGasto(form) {
   const nextId = (parseInt(lastId) || 0) + 1;
 
   const fechaCargo = new Date(form.fecha_cargo + "T00:00:00");
-  const meses = ["ENERO","FEBRERO","MARZO","ABRIL","MAYO","JUNIO","JULIO","AGOSTO","SEPTIEMBRE","OCTUBRE","NOVIEMBRE","DICIEMBRE"];
+  const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
   
   const nuevaFila = [
     nextId, form.concepto, parseFloat(form.monto), form.tipo_gasto, form.forma_pago,
