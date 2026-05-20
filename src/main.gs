@@ -1,7 +1,7 @@
 function doGet() {
   const template = HtmlService.createTemplateFromFile('index');
   return template.evaluate()
-    .setTitle('Gestión de Gastos - Paco')
+    .setTitle('Gestión de Ingresos y Egresos_v1.0')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
