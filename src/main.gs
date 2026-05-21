@@ -1,8 +1,29 @@
 function doGet() {
+  // Clean up and repair any duplicate IDs in the spreadsheet
+  reindexarTodo();
+
   const template = HtmlService.createTemplateFromFile('index');
   return template.evaluate()
     .setTitle('Gestión de Ingresos y Egresos_v1.0')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+function reindexarTodo() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('unificado_v4');
+  if (!sheet) return;
+  
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return;
+  
+  const idRange = sheet.getRange(2, 1, lastRow - 1, 1);
+  const ids = idRange.getValues();
+  
+  for (let i = 0; i < ids.length; i++) {
+    ids[i][0] = i + 1;
+  }
+  
+  idRange.setValues(ids);
 }
 
 function include(filename) {
