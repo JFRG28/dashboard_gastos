@@ -100,6 +100,8 @@
       }
     } else if (sectionId === 'cálculos') {
       cargarCalculosDashboard();
+    } else if (sectionId === 'balance') {
+      cargarBalance();
     }
   }
 
@@ -684,6 +686,236 @@
     }, err => {
       alert("Error al actualizar filtros: " + err);
       cargarCalculosDashboard();
+    });
+  }
+
+  /* Balance Section Functionality */
+  let rawBalanceData = [];
+  let filteredBalanceData = [];
+  let isBalanceLoaded = false;
+  let currentBalPage = 1;
+  let balPageSize = 20;
+
+  function cargarBalance() {
+    const loading = document.getElementById('bal-loading');
+    const tableCont = document.getElementById('bal-table-container');
+    
+    if (!isBalanceLoaded) {
+      loading.classList.remove('d-none');
+      tableCont.classList.add('d-none');
+    }
+
+    API.getBalance(data => {
+      loading.classList.add('d-none');
+      tableCont.classList.remove('d-none');
+      isBalanceLoaded = true;
+
+      if (!data) return;
+
+      const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+      document.getElementById('bal-kpi-total').innerText = fmt.format(data.kpis.total);
+      document.getElementById('bal-kpi-debito').innerText = fmt.format(data.kpis.debito);
+      document.getElementById('bal-kpi-invertido').innerText = fmt.format(data.kpis.invertido);
+      document.getElementById('bal-kpi-debenser').innerText = fmt.format(data.kpis.sumaDebenSer);
+      
+      const diffVal = data.kpis.sumaDiferencia;
+      const diffEl = document.getElementById('bal-kpi-diferencia');
+      diffEl.innerText = fmt.format(diffVal);
+
+      rawBalanceData = data.rows || [];
+      filtrarBalance();
+    }, err => {
+      loading.classList.add('d-none');
+      alert("Error al cargar balance: " + err);
+    });
+  }
+
+  function filtrarBalance() {
+    const searchVal = document.getElementById('bal-filter-search').value.toLowerCase().trim();
+    const tipoVal = document.getElementById('bal-filter-tipo').value;
+
+    filteredBalanceData = rawBalanceData.filter(item => {
+      if (tipoVal && item.tipo !== tipoVal) return false;
+      if (searchVal) {
+        const text = `${item.concepto} ${item.comentarios} ${item.restricciones}`.toLowerCase();
+        if (!text.includes(searchVal)) return false;
+      }
+      return true;
+    });
+
+    currentBalPage = 1;
+    document.getElementById('bal-count-badge').innerText = `${filteredBalanceData.length} registros`;
+    renderBalanceTable();
+  }
+
+  function renderBalanceTable() {
+    const startIdx = (currentBalPage - 1) * balPageSize;
+    const endIdx = startIdx + balPageSize;
+    const pageData = filteredBalanceData.slice(startIdx, endIdx);
+
+    const tbody = document.getElementById('bal-tbody');
+    const emptyState = document.getElementById('bal-empty-state');
+    
+    tbody.innerHTML = '';
+
+    if (filteredBalanceData.length === 0) {
+      emptyState.classList.remove('d-none');
+      document.getElementById('bal-pagination-buttons').innerHTML = '';
+      document.getElementById('bal-pagination-info').innerText = 'Mostrando 0 registros';
+      return;
+    }
+
+    emptyState.classList.add('d-none');
+    const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+
+    pageData.forEach(item => {
+      const tr = document.createElement('tr');
+      
+      let badgeClass = 'badge bg-light text-dark';
+      let typeLabel = item.tipo;
+      if (item.tipo === 'D') {
+        badgeClass = 'badge bg-info-subtle text-info border border-info-subtle';
+        typeLabel = 'Débito (D)';
+      } else if (item.tipo === 'I') {
+        badgeClass = 'badge bg-primary-subtle text-primary border border-primary-subtle';
+        typeLabel = 'Invertido (I)';
+      }
+
+      const diffVal = Number(item.diferencia) || 0;
+      const diffClass = diffVal < 0 ? 'text-danger fw-bold' : (diffVal > 0 ? 'text-success fw-bold' : 'text-muted');
+
+      tr.innerHTML = `
+        <td class="text-center"><span class="${badgeClass} small fw-bold">${typeLabel}</span></td>
+        <td class="fw-medium">${item.concepto || '-'}</td>
+        <td class="text-end fw-bold text-dark">${fmt.format(item.monto)}</td>
+        <td class="text-end text-secondary">${fmt.format(item.debenSer)}</td>
+        <td class="text-end ${diffClass}">${fmt.format(diffVal)}</td>
+        <td class="small text-secondary" style="max-width: 250px; white-space: pre-wrap;">${item.comentarios || '-'}</td>
+        <td class="small text-muted" style="max-width: 250px; white-space: pre-wrap;">${item.restricciones || '-'}</td>
+        <td class="text-center">
+          <button class="btn btn-link text-primary p-0" onclick="abrirEditBalance(${item.rowNum})"><i class="fa-solid fa-pen"></i></button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    renderBalancePagination();
+  }
+
+  function renderBalancePagination() {
+    const totalPages = Math.ceil(filteredBalanceData.length / balPageSize);
+    const container = document.getElementById('bal-pagination-buttons');
+    container.innerHTML = '';
+
+    const startRecord = filteredBalanceData.length > 0 ? (currentBalPage - 1) * balPageSize + 1 : 0;
+    const endRecord = Math.min(currentBalPage * balPageSize, filteredBalanceData.length);
+    document.getElementById('bal-pagination-info').innerText = `Mostrando ${startRecord} a ${endRecord} de ${filteredBalanceData.length} registros`;
+
+    if (totalPages <= 1) return;
+
+    const addPageItem = (page, label, active = false, disabled = false) => {
+      const li = document.createElement('li');
+      li.className = `page-item ${active ? 'active' : ''} ${disabled ? 'disabled' : ''}`;
+      
+      const a = document.createElement('a');
+      a.className = 'page-link';
+      a.href = '#';
+      a.innerHTML = label;
+      a.onclick = (e) => {
+        e.preventDefault();
+        if (!disabled && !active) {
+          currentBalPage = page;
+          renderBalanceTable();
+        }
+      };
+      li.appendChild(a);
+      container.appendChild(li);
+    };
+
+    addPageItem(1, '<i class="fa-solid fa-angles-left"></i>', false, currentBalPage === 1);
+    addPageItem(currentBalPage - 1, '<i class="fa-solid fa-angle-left"></i>', false, currentBalPage === 1);
+
+    let startPage = Math.max(1, currentBalPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    if (endPage - startPage < 4) {
+      startPage = Math.max(1, endPage - 4);
+    }
+
+    for (let p = startPage; p <= endPage; p++) {
+      addPageItem(p, p, p === currentBalPage);
+    }
+
+    addPageItem(currentBalPage + 1, '<i class="fa-solid fa-angle-right"></i>', false, currentBalPage === totalPages);
+    addPageItem(totalPages, '<i class="fa-solid fa-angles-right"></i>', false, currentBalPage === totalPages);
+  }
+
+  function changeBalPageSize(size) {
+    balPageSize = parseInt(size);
+    currentBalPage = 1;
+    renderBalanceTable();
+  }
+
+  let modalEditBalanceBS = null;
+
+  function abrirEditBalance(rowNum) {
+    const item = rawBalanceData.find(r => r.rowNum === rowNum);
+    if (!item) return;
+
+    document.getElementById('bal-edit-rowNum').value = item.rowNum;
+    document.getElementById('bal-edit-tipo').value = item.tipo;
+    document.getElementById('bal-edit-concepto').value = item.concepto || '';
+    document.getElementById('bal-edit-monto').value = item.monto;
+    document.getElementById('bal-edit-debenser').value = item.debenSer;
+    document.getElementById('bal-edit-comentarios').value = item.comentarios || '';
+    document.getElementById('bal-edit-restricciones').value = item.restricciones || '';
+
+    // Clear output status
+    const out = document.getElementById('bal-edit-output');
+    out.className = 'd-none';
+    out.innerText = '';
+    
+    document.getElementById('btn-save-balance').disabled = false;
+
+    if (!modalEditBalanceBS) {
+      modalEditBalanceBS = new bootstrap.Modal(document.getElementById('modalEditBalance'));
+    }
+    modalEditBalanceBS.show();
+  }
+
+  function submitEditBalance(e) {
+    e.preventDefault();
+    
+    const rowNum = parseInt(document.getElementById('bal-edit-rowNum').value);
+    const btn = document.getElementById('btn-save-balance');
+    const out = document.getElementById('bal-edit-output');
+    
+    btn.disabled = true;
+    out.className = "text-center mt-3 small fw-bold text-primary";
+    out.innerHTML = '<div class="spinner-border spinner-border-sm me-2" role="status"></div>Guardando cambios...';
+    
+    const payload = {
+      tipo: document.getElementById('bal-edit-tipo').value,
+      concepto: document.getElementById('bal-edit-concepto').value,
+      monto: parseFloat(document.getElementById('bal-edit-monto').value) || 0,
+      debenSer: parseFloat(document.getElementById('bal-edit-debenser').value) || 0,
+      comentarios: document.getElementById('bal-edit-comentarios').value,
+      restricciones: document.getElementById('bal-edit-restricciones').value
+    };
+
+    API.editBalance(rowNum, payload, res => {
+      out.className = "text-center mt-3 small fw-bold text-success";
+      out.innerText = res;
+      
+      setTimeout(() => {
+        if (modalEditBalanceBS) {
+          modalEditBalanceBS.hide();
+        }
+        cargarBalance(); // Reload data & update KPIs
+      }, 1200);
+    }, err => {
+      out.className = "text-center mt-3 small fw-bold text-danger";
+      out.innerText = "Error: " + err;
+      btn.disabled = false;
     });
   }
 </script>

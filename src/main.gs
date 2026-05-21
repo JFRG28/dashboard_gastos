@@ -165,3 +165,66 @@ function updateCalculosTable(tableNum, filters) {
   
   return getCalculosData();
 }
+
+function getBalanceData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('balance');
+  if (!sheet) return null;
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return null;
+
+  // Columns B to H: tipo, concepto, monto, deben_ser, diferencia, comentarios, restricciones
+  const data = sheet.getRange(2, 2, lastRow - 1, 7).getValues();
+  
+  // Read summary cells
+  const total = sheet.getRange("J3").getValue();
+  const debito = sheet.getRange("K3").getValue();
+  const invertido = sheet.getRange("L3").getValue();
+  const sumaDebenSer = sheet.getRange("M3").getValue();
+  const sumaDiferencia = sheet.getRange("N3").getValue();
+
+  const rows = [];
+  for (let i = 1; i < data.length; i++) { // Skip header row at index 0
+    const row = data[i];
+    if (!row[1]) continue; // If 'concepto' is empty, skip
+    rows.push({
+      rowNum: i + 2,
+      tipo: row[0],
+      concepto: row[1],
+      monto: Number(row[2]) || 0,
+      debenSer: Number(row[3]) || 0,
+      diferencia: Number(row[4]) || 0,
+      comentarios: row[5] || '',
+      restricciones: row[6] || ''
+    });
+  }
+
+  return {
+    kpis: {
+      total: Number(total) || 0,
+      debito: Number(debito) || 0,
+      invertido: Number(invertido) || 0,
+      sumaDebenSer: Number(sumaDebenSer) || 0,
+      sumaDiferencia: Number(sumaDiferencia) || 0
+    },
+    rows: rows
+  };
+}
+
+function editarBalance(rowNum, data) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('balance');
+  if (!sheet) throw new Error("La hoja 'balance' no existe.");
+
+  sheet.getRange(rowNum, 2).setValue(data.tipo);
+  sheet.getRange(rowNum, 3).setValue(data.concepto);
+  sheet.getRange(rowNum, 4).setValue(Number(data.monto) || 0);
+  sheet.getRange(rowNum, 5).setValue(Number(data.debenSer) || 0);
+  // Column 6 (F) is difference (formula, skipped)
+  sheet.getRange(rowNum, 7).setValue(data.comentarios || '');
+  sheet.getRange(rowNum, 8).setValue(data.restricciones || '');
+
+  SpreadsheetApp.flush();
+  return "Registro de Balance actualizado correctamente.";
+}
