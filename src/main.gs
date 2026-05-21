@@ -286,7 +286,16 @@ function duplicarGastos(ids, customFields) {
   for (let i = 1; i < data.length; i++) {
     const rowIdNum = parseInt(data[i][0]);
     if (!isNaN(rowIdNum) && targetIds.includes(rowIdNum)) {
-      rowsToDuplicate.push(data[i]);
+      const row = data[i];
+      const tipo = String(row[3] || '').toUpperCase();
+      if (['MSI', 'MCI'].includes(tipo)) {
+        const current = parseInt(row[10]) || 0;
+        const total = parseInt(row[11]) || 0;
+        if (current >= total && total > 0) {
+          throw new Error("El registro #" + rowIdNum + " ya alcanzó su última mensualidad. No se permite duplicarlo.");
+        }
+      }
+      rowsToDuplicate.push(row);
     }
   }
   

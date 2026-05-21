@@ -1523,6 +1523,27 @@
   function bulkDuplicar() {
     if (selectedIds.length === 0) return;
     
+    // Check if any selected records have reached the maximum installment limit
+    const invalidIds = [];
+    selectedIds.forEach(id => {
+      const item = rawUnificadoData.find(d => String(d.id) === String(id));
+      if (item) {
+        const tipo = (item.tipo || '').toUpperCase();
+        if (['MSI', 'MCI'].includes(tipo)) {
+          const current = parseInt(item.noMens) || 0;
+          const total = parseInt(item.totalMeses) || 0;
+          if (current >= total && total > 0) {
+            invalidIds.push(id);
+          }
+        }
+      }
+    });
+
+    if (invalidIds.length > 0) {
+      alert(`No se permite duplicar registros que hayan alcanzado su última mensualidad. Registro(s) no permitido(s): ${invalidIds.join(', ')}`);
+      return;
+    }
+    
     // Set default values based on current date
     const now = new Date();
     const currentYear = now.getFullYear();
