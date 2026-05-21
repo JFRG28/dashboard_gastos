@@ -1349,6 +1349,17 @@
     const item = rawUnificadoData.find(d => String(d.id) === String(id));
     if (!item) return;
 
+    // Check if it has reached the maximum installment limit
+    const tipo = (item.tipo || '').toUpperCase();
+    if (['MSI', 'MCI'].includes(tipo)) {
+      const current = parseInt(item.noMens) || 0;
+      const total = parseInt(item.totalMeses) || 0;
+      if (current >= total && total > 0) {
+        alert("Se alcanzó la última mensualidad del registro original. No se permite duplicarlo");
+        return;
+      }
+    }
+
     // Switch view to registration form
     nav('registro');
 
@@ -1400,28 +1411,12 @@
     actualizarAbrev();
 
     // Specific logic for types
-    const tipo = (item.tipo || '').toUpperCase();
     if (['MSI', 'MCI'].includes(tipo)) {
       const current = parseInt(item.noMens) || 0;
       const total = parseInt(item.totalMeses) || 0;
       
-      if (current < total) {
-        // Increment installment count
-        document.getElementById('no_mens').value = current + 1;
-        document.getElementById('total_meses').value = total;
-      } else {
-        // If it was the last installment, reset to 1 (as if starting a new series/purchase)
-        document.getElementById('no_mens').value = 1;
-        document.getElementById('total_meses').value = total;
-        
-        // Inform user
-        const out = document.getElementById('output');
-        if (out) {
-          out.className = 'text-warning small fw-bold mt-2';
-          out.innerText = 'Se alcanzó la última mensualidad del registro original. Se reinició a 1.';
-          setTimeout(() => { out.innerText = ''; }, 5000);
-        }
-      }
+      document.getElementById('no_mens').value = current + 1;
+      document.getElementById('total_meses').value = total;
     } else {
       // For non-MSI/MCI records (like Fijo, Cargo, etc.)
       document.getElementById('no_mens').value = 0;
