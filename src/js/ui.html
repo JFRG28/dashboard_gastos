@@ -1414,7 +1414,7 @@
 
   function confirmarEliminar(id) {
     if (confirm(`¿Estás seguro de que deseas eliminar el registro #${id}? Esta acción eliminará el registro y reordenará la secuencia de IDs de los registros posteriores.`)) {
-      API.delete(id, res => {
+      API.deleteGasto(id, res => {
         alert(res);
         isDataLoaded = false; // Mark data as stale to trigger refresh
         cargarDatosUnificado(); // Reload data

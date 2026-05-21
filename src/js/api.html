@@ -4,7 +4,7 @@
     save: (data, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).registrarGasto(data),
     getUnificadoData: (cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).getUnificadoData(),
     edit: (id, data, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).editarGasto(id, data),
-    delete: (id, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).eliminarGasto(id),
+    deleteGasto: (id, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).eliminarGasto(id),
     getCalculos: (cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).getCalculosData(),
     updateCalculos: (tableNum, filters, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).updateCalculosTable(tableNum, filters),
     getBalance: (cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).getBalanceData(),

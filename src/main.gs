@@ -97,8 +97,13 @@ function editarGasto(id, form) {
   
   // Find row matching ID in column 1 (0-indexed 0)
   for (let i = 1; i < data.length; i++) {
-    if (String(data[i][0]) === String(id)) {
+    const rowIdNum = parseInt(data[i][0]);
+    const targetIdNum = parseInt(id);
+    if (!isNaN(rowIdNum) && !isNaN(targetIdNum) && rowIdNum === targetIdNum) {
       targetRowIndex = i + 1; // Google Sheets row numbers are 1-based
+      break;
+    } else if (String(data[i][0]).trim() === String(id).trim()) {
+      targetRowIndex = i + 1;
       break;
     }
   }
@@ -146,8 +151,13 @@ function eliminarGasto(id) {
   
   // Find row matching ID in column 1 (0-indexed 0)
   for (let i = 1; i < data.length; i++) {
-    if (String(data[i][0]) === String(id)) {
+    const rowIdNum = parseInt(data[i][0]);
+    const targetIdNum = parseInt(id);
+    if (!isNaN(rowIdNum) && !isNaN(targetIdNum) && rowIdNum === targetIdNum) {
       targetRowIndex = i + 1; // Google Sheets row numbers are 1-based
+      break;
+    } else if (String(data[i][0]).trim() === String(id).trim()) {
+      targetRowIndex = i + 1;
       break;
     }
   }
