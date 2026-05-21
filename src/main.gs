@@ -107,3 +107,61 @@ function editarGasto(id, form) {
   sheet.getRange(targetRowIndex, 1, 1, filaActualizada.length).setValues([filaActualizada]);
   return "Registro #" + id + " guardado correctamente.";
 }
+
+function getCalculosData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('cálculos');
+  if (!sheet) return null;
+  
+  // Read current filter cell values
+  const t1AnioVal = sheet.getRange("C2").getValue();
+  const t1Anio = (typeof t1AnioVal === 'number') ? Math.round(t1AnioVal) : t1AnioVal;
+  const t1Mes = sheet.getRange("C3").getValue();
+  
+  const t2Tarjeta = sheet.getRange("C7").getValue();
+  const t2AnioVal = sheet.getRange("E7").getValue();
+  const t2Anio = (typeof t2AnioVal === 'number') ? Math.round(t2AnioVal) : t2AnioVal;
+  const t2Mes = sheet.getRange("C8").getValue();
+  
+  const t3AnioVal = sheet.getRange("C12").getValue();
+  const t3Anio = (typeof t3AnioVal === 'number') ? Math.round(t3AnioVal) : t3AnioVal;
+  const t3Mes = sheet.getRange("C13").getValue();
+
+  // Read headers and data rows
+  const t1Headers = sheet.getRange("B4:D4").getValues()[0];
+  const t1Values = sheet.getRange("B5:D5").getValues()[0];
+  
+  const t2Headers = sheet.getRange("B9:I9").getValues()[0];
+  const t2Values = sheet.getRange("B10:I10").getValues()[0];
+  
+  const t3Headers = sheet.getRange("B14:F14").getValues()[0];
+  const t3Values = sheet.getRange("B15:F15").getValues()[0];
+
+  return {
+    t1: { anio: t1Anio, mes: t1Mes, headers: t1Headers, values: t1Values },
+    t2: { tarjeta: t2Tarjeta, anio: t2Anio, mes: t2Mes, headers: t2Headers, values: t2Values },
+    t3: { anio: t3Anio, mes: t3Mes, headers: t3Headers, values: t3Values }
+  };
+}
+
+function updateCalculosTable(tableNum, filters) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('cálculos');
+  if (!sheet) throw new Error("La hoja 'cálculos' no existe.");
+
+  if (tableNum === 1) {
+    if (filters.anio !== undefined) sheet.getRange("C2").setValue(Number(filters.anio) || filters.anio);
+    if (filters.mes !== undefined) sheet.getRange("C3").setValue(filters.mes);
+  } else if (tableNum === 2) {
+    if (filters.tarjeta !== undefined) sheet.getRange("C7").setValue(filters.tarjeta);
+    if (filters.anio !== undefined) sheet.getRange("E7").setValue(Number(filters.anio) || filters.anio);
+    if (filters.mes !== undefined) sheet.getRange("C8").setValue(filters.mes);
+  } else if (tableNum === 3) {
+    if (filters.anio !== undefined) sheet.getRange("C12").setValue(Number(filters.anio) || filters.anio);
+    if (filters.mes !== undefined) sheet.getRange("C13").setValue(filters.mes);
+  }
+
+  SpreadsheetApp.flush(); // Recalculate sheet formulas
+  
+  return getCalculosData();
+}

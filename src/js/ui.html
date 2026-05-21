@@ -98,6 +98,8 @@
       if (!isDataLoaded) {
         cargarDatosUnificado();
       }
+    } else if (sectionId === 'cálculos') {
+      cargarCalculosDashboard();
     }
   }
 
@@ -554,6 +556,134 @@
       out.innerText = "Error: " + err;
       out.className = "text-center mt-3 small fw-bold text-danger";
       btn.disabled = false;
+    });
+  }
+
+  let calculosLoaded = false;
+
+  function cargarCalculosDashboard() {
+    const target = document.getElementById('sec-cálculos');
+    if (!target) return;
+
+    if (!calculosLoaded) {
+      showCalculosSpinners();
+    }
+
+    API.getCalculos(data => {
+      if (!data) return;
+      calculosLoaded = true;
+      renderCalculosData(data);
+    }, err => {
+      alert("Error al cargar cálculos: " + err);
+    });
+  }
+
+  function showCalculosSpinners() {
+    const spinners = ['calc-t1-values', 'calc-t2-values', 'calc-t3-values'];
+    spinners.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = '<td colspan="12" class="text-center text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Cargando...</td>';
+    });
+  }
+
+  function populateSelectOptions(selectId, optionsArray, selectedValue) {
+    const el = document.getElementById(selectId);
+    if (!el) return;
+    el.innerHTML = '';
+    optionsArray.forEach(o => {
+      const opt = new Option(o, o);
+      if (String(o) === String(selectedValue)) opt.selected = true;
+      el.add(opt);
+    });
+  }
+
+  function renderCalculosData(data) {
+    const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+    const mesesCompletos = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+    // 1. Populate filters if not already populated
+    if (document.getElementById('calc-t1-mes').options.length === 0) {
+      populateSelectOptions('calc-t1-mes', mesesCompletos, data.t1.mes);
+      document.getElementById('calc-t1-anio').value = data.t1.anio;
+    }
+    if (document.getElementById('calc-t2-mes').options.length === 0) {
+      populateSelectOptions('calc-t2-mes', mesesCompletos, data.t2.mes);
+      document.getElementById('calc-t2-anio').value = data.t2.anio;
+      const tarjetas = opcionesGlobales ? opcionesGlobales.formasPago : [data.t2.tarjeta];
+      populateSelectOptions('calc-t2-tarjeta', tarjetas, data.t2.tarjeta);
+    }
+    if (document.getElementById('calc-t3-mes').options.length === 0) {
+      populateSelectOptions('calc-t3-mes', mesesCompletos, data.t3.mes);
+      document.getElementById('calc-t3-anio').value = data.t3.anio;
+    }
+
+    // 2. Render Table 1
+    const t1HeadersEl = document.getElementById('calc-t1-headers');
+    const t1ValuesEl = document.getElementById('calc-t1-values');
+    if (t1HeadersEl && t1ValuesEl) {
+      t1HeadersEl.innerHTML = data.t1.headers.map(h => `<th class="text-secondary small fw-bold">${h || ''}</th>`).join('');
+      t1ValuesEl.innerHTML = data.t1.values.map((v, idx) => {
+        let textClass = 'text-dark';
+        if (idx === 2) {
+          textClass = v < 0 ? 'text-danger' : (v > 0 ? 'text-success' : 'text-dark');
+        }
+        return `<td class="${textClass}">${fmt.format(Number(v) || 0)}</td>`;
+      }).join('');
+    }
+
+    // 3. Render Table 2
+    const t2HeadersEl = document.getElementById('calc-t2-headers');
+    const t2ValuesEl = document.getElementById('calc-t2-values');
+    if (t2HeadersEl && t2ValuesEl) {
+      t2HeadersEl.innerHTML = data.t2.headers.map(h => `<th class="text-secondary small fw-bold">${h || ''}</th>`).join('');
+      t2ValuesEl.innerHTML = data.t2.values.map((v, idx) => {
+        let textClass = 'text-dark';
+        const hName = String(data.t2.headers[idx] || '').toUpperCase();
+        if (hName.includes('DIFERENCIA')) {
+          textClass = v < 0 ? 'text-danger' : (v > 0 ? 'text-success' : 'text-dark');
+        }
+        return `<td class="${textClass}">${fmt.format(Number(v) || 0)}</td>`;
+      }).join('');
+    }
+
+    // 4. Render Table 3
+    const t3HeadersEl = document.getElementById('calc-t3-headers');
+    const t3ValuesEl = document.getElementById('calc-t3-values');
+    if (t3HeadersEl && t3ValuesEl) {
+      t3HeadersEl.innerHTML = data.t3.headers.map(h => `<th class="text-secondary small fw-bold">${h || ''}</th>`).join('');
+      t3ValuesEl.innerHTML = data.t3.values.map((v, idx) => {
+        let textClass = 'text-dark';
+        const hName = String(data.t3.headers[idx] || '').toUpperCase();
+        if (hName.includes('DIFERENCIA')) {
+          textClass = v < 0 ? 'text-danger' : (v > 0 ? 'text-success' : 'text-dark');
+        }
+        return `<td class="${textClass}">${fmt.format(Number(v) || 0)}</td>`;
+      }).join('');
+    }
+  }
+
+  function onCalcFilterChange(tableNum) {
+    let filters = {};
+    if (tableNum === 1) {
+      filters.anio = document.getElementById('calc-t1-anio').value;
+      filters.mes = document.getElementById('calc-t1-mes').value;
+      document.getElementById('calc-t1-values').innerHTML = '<td colspan="5" class="text-center text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Actualizando...</td>';
+    } else if (tableNum === 2) {
+      filters.tarjeta = document.getElementById('calc-t2-tarjeta').value;
+      filters.anio = document.getElementById('calc-t2-anio').value;
+      filters.mes = document.getElementById('calc-t2-mes').value;
+      document.getElementById('calc-t2-values').innerHTML = '<td colspan="12" class="text-center text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Actualizando...</td>';
+    } else if (tableNum === 3) {
+      filters.anio = document.getElementById('calc-t3-anio').value;
+      filters.mes = document.getElementById('calc-t3-mes').value;
+      document.getElementById('calc-t3-values').innerHTML = '<td colspan="10" class="text-center text-muted"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Actualizando...</td>';
+    }
+
+    API.updateCalculos(tableNum, filters, data => {
+      renderCalculosData(data);
+    }, err => {
+      alert("Error al actualizar filtros: " + err);
+      cargarCalculosDashboard();
     });
   }
 </script>

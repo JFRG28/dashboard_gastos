@@ -1,0 +1,124 @@
+<div class="container-fluid py-2">
+  <div class="row g-4">
+    <!-- Card 1: Cuentas Lulú -->
+    <div class="col-12 col-xl-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-0 py-3 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between">
+          <h5 class="mb-2 mb-sm-0 text-dark fw-bold"><i class="fa-solid fa-people-arrows text-primary me-2"></i> Cuentas Lulú</h5>
+          <div class="d-flex gap-2">
+            <!-- Year select -->
+            <select id="calc-t1-anio" class="form-select form-select-sm bg-light border-0" onchange="onCalcFilterChange(1)">
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026" selected>2026</option>
+              <option value="2027">2027</option>
+              <option value="2028">2028</option>
+            </select>
+            <!-- Month select -->
+            <select id="calc-t1-mes" class="form-select form-select-sm bg-light border-0" onchange="onCalcFilterChange(1)">
+              <!-- Options loaded dynamically -->
+            </select>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr id="calc-t1-headers">
+                  <!-- Headers dynamic -->
+                </tr>
+              </thead>
+              <tbody>
+                <tr id="calc-t1-values" class="fs-5 fw-bold text-dark">
+                  <!-- Values dynamic -->
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Balance General -->
+    <div class="col-12 col-xl-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-0 py-3 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between">
+          <h5 class="mb-2 mb-sm-0 text-dark fw-bold"><i class="fa-solid fa-scale-balanced text-primary me-2"></i> Balance General</h5>
+          <div class="d-flex gap-2">
+            <!-- Year select -->
+            <select id="calc-t3-anio" class="form-select form-select-sm bg-light border-0" onchange="onCalcFilterChange(3)">
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026" selected>2026</option>
+              <option value="2027">2027</option>
+              <option value="2028">2028</option>
+            </select>
+            <!-- Month select -->
+            <select id="calc-t3-mes" class="form-select form-select-sm bg-light border-0" onchange="onCalcFilterChange(3)">
+              <!-- Options loaded dynamically -->
+            </select>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr id="calc-t3-headers">
+                  <!-- Headers dynamic -->
+                </tr>
+              </thead>
+              <tbody>
+                <tr id="calc-t3-values" class="fs-5 fw-bold text-dark">
+                  <!-- Values dynamic -->
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Detalle por Tarjeta -->
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-0 py-3 d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+          <h5 class="mb-2 mb-md-0 text-dark fw-bold"><i class="fa-solid fa-credit-card text-primary me-2"></i> Detalle por Tarjeta</h5>
+          <div class="d-flex flex-wrap gap-2">
+            <!-- Tarjeta select -->
+            <select id="calc-t2-tarjeta" class="form-select form-select-sm bg-light border-0" style="min-width: 145px;" onchange="onCalcFilterChange(2)">
+              <!-- Options loaded dynamically -->
+            </select>
+            <!-- Year select -->
+            <select id="calc-t2-anio" class="form-select form-select-sm bg-light border-0" onchange="onCalcFilterChange(2)">
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026" selected>2026</option>
+              <option value="2027">2027</option>
+              <option value="2028">2028</option>
+            </select>
+            <!-- Month select -->
+            <select id="calc-t2-mes" class="form-select form-select-sm bg-light border-0" onchange="onCalcFilterChange(2)">
+              <!-- Options loaded dynamically -->
+            </select>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle text-center">
+              <thead class="table-light">
+                <tr id="calc-t2-headers">
+                  <!-- Headers dynamic -->
+                </tr>
+              </thead>
+              <tbody>
+                <tr id="calc-t2-values" class="fw-bold text-dark">
+                  <!-- Values dynamic -->
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
