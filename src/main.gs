@@ -136,6 +136,52 @@ function editarGasto(id, form) {
   return "Registro #" + id + " guardado correctamente.";
 }
 
+function eliminarGasto(id) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('unificado_v4');
+  if (!sheet) throw new Error("La hoja 'unificado_v4' no existe.");
+  
+  const data = sheet.getDataRange().getValues();
+  let targetRowIndex = -1;
+  
+  // Find row matching ID in column 1 (0-indexed 0)
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(id)) {
+      targetRowIndex = i + 1; // Google Sheets row numbers are 1-based
+      break;
+    }
+  }
+  
+  if (targetRowIndex === -1) {
+    throw new Error("Registro con ID #" + id + " no encontrado.");
+  }
+  
+  // Delete the row
+  sheet.deleteRow(targetRowIndex);
+  
+  // If we deleted a row that was not the last row, we need to shift/re-sequence subsequent IDs.
+  const lastRow = sheet.getLastRow();
+  if (targetRowIndex <= lastRow) {
+    const numRowsToUpdate = lastRow - targetRowIndex + 1;
+    // Read the ID column (column 1) for the remaining rows that shifted up
+    const idRange = sheet.getRange(targetRowIndex, 1, numRowsToUpdate, 1);
+    const ids = idRange.getValues();
+    
+    // Decrement each ID by 1 to maintain sequence
+    for (let i = 0; i < ids.length; i++) {
+      const currentId = parseInt(ids[i][0]);
+      if (!isNaN(currentId)) {
+        ids[i][0] = currentId - 1;
+      }
+    }
+    
+    // Write back the updated IDs
+    idRange.setValues(ids);
+  }
+  
+  return "Registro #" + id + " eliminado y secuencia de IDs reajustada correctamente.";
+}
+
 function getCalculosData() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('cálculos');

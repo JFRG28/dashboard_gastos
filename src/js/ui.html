@@ -445,6 +445,9 @@
           <button class="btn btn-sm btn-outline-secondary rounded-circle border-0 ms-1" onclick="duplicarRegistro(${item.id})" title="Duplicar">
             <i class="fa-solid fa-copy"></i>
           </button>
+          <button class="btn btn-sm btn-outline-danger rounded-circle border-0 ms-1" onclick="confirmarEliminar(${item.id})" title="Eliminar">
+            <i class="fa-solid fa-trash"></i>
+          </button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -1406,6 +1409,18 @@
       // For non-MSI/MCI records (like Fijo, Cargo, etc.)
       document.getElementById('no_mens').value = 0;
       document.getElementById('total_meses').value = 0;
+    }
+  }
+
+  function confirmarEliminar(id) {
+    if (confirm(`¿Estás seguro de que deseas eliminar el registro #${id}? Esta acción eliminará el registro y reordenará la secuencia de IDs de los registros posteriores.`)) {
+      API.delete(id, res => {
+        alert(res);
+        isDataLoaded = false; // Mark data as stale to trigger refresh
+        cargarDatosUnificado(); // Reload data
+      }, err => {
+        alert("Error al eliminar: " + err);
+      });
     }
   }
 </script>
