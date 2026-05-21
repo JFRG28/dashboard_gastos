@@ -411,8 +411,11 @@
         <td class="text-center"><span class="badge badge-tag">${item.tag || '-'}</span></td>
         <td class="text-center"><span class="badge ${divideBadgeClass}">${item.seDivide || '-'}</span></td>
         <td class="text-center">
-          <button class="btn btn-sm btn-outline-primary rounded-circle border-0" onclick="abrirModalEdicion(${item.id})">
+          <button class="btn btn-sm btn-outline-primary rounded-circle border-0" onclick="abrirModalEdicion(${item.id})" title="Editar">
             <i class="fa-solid fa-pen"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-secondary rounded-circle border-0 ms-1" onclick="duplicarRegistro(${item.id})" title="Duplicar">
+            <i class="fa-solid fa-copy"></i>
           </button>
         </td>
       `;
@@ -1292,5 +1295,89 @@
       out.innerText = "Error: " + err;
       btn.disabled = false;
     });
+  }
+
+  function duplicarRegistro(id) {
+    const item = rawUnificadoData.find(d => String(d.id) === String(id));
+    if (!item) return;
+
+    // Switch view to registration form
+    nav('registro');
+
+    // Populate general fields
+    document.getElementById('concepto').value = item.concepto || '';
+    document.getElementById('monto').value = item.monto || '';
+    document.getElementById('tipo_gasto').value = item.tipo || '';
+    document.getElementById('forma_pago').value = item.formaPago || '';
+    document.getElementById('categoria').value = item.categoria || '';
+    document.getElementById('tag').value = item.tag || '';
+    document.getElementById('se_divide').value = item.seDivide || '';
+
+    // Handle mensualidades visibility
+    toggleMensualidades();
+
+    // Date calculations
+    let fechaOriginalStr = item.fechaCargo || '';
+    if (fechaOriginalStr) {
+      const f = new Date(fechaOriginalStr + "T00:00:00");
+      if (!isNaN(f.getTime())) {
+        // Shift date forward by exactly 1 month
+        f.setMonth(f.getMonth() + 1);
+        
+        // Format to YYYY-MM-DD
+        const yyyy = f.getFullYear();
+        const mm = String(f.getMonth() + 1).padStart(2, '0');
+        const dd = String(f.getDate()).padStart(2, '0');
+        const nuevaFechaStr = `${yyyy}-${mm}-${dd}`;
+        
+        document.getElementById('fecha_cargo').value = nuevaFechaStr;
+        
+        // Populate fecha_pago if it was defined, shifting it too (or just keep it empty/cargo-based)
+        if (item.fechaPago && item.fechaPago !== item.fechaCargo) {
+          const fp = new Date(item.fechaPago + "T00:00:00");
+          if (!isNaN(fp.getTime())) {
+            fp.setMonth(fp.getMonth() + 1);
+            const fpYyyy = fp.getFullYear();
+            const fpMm = String(fp.getMonth() + 1).padStart(2, '0');
+            const fpDd = String(fp.getDate()).padStart(2, '0');
+            document.getElementById('fecha_pago').value = `${fpYyyy}-${fpMm}-${fpDd}`;
+          }
+        } else {
+          document.getElementById('fecha_pago').value = '';
+        }
+      }
+    }
+    
+    // Update month and abbreviation dropdowns based on the new cargo date
+    actualizarAbrev();
+
+    // Specific logic for types
+    const tipo = (item.tipo || '').toUpperCase();
+    if (['MSI', 'MCI'].includes(tipo)) {
+      const current = parseInt(item.noMens) || 0;
+      const total = parseInt(item.totalMeses) || 0;
+      
+      if (current < total) {
+        // Increment installment count
+        document.getElementById('no_mens').value = current + 1;
+        document.getElementById('total_meses').value = total;
+      } else {
+        // If it was the last installment, reset to 1 (as if starting a new series/purchase)
+        document.getElementById('no_mens').value = 1;
+        document.getElementById('total_meses').value = total;
+        
+        // Inform user
+        const out = document.getElementById('output');
+        if (out) {
+          out.className = 'text-warning small fw-bold mt-2';
+          out.innerText = 'Se alcanzó la última mensualidad del registro original. Se reinició a 1.';
+          setTimeout(() => { out.innerText = ''; }, 5000);
+        }
+      }
+    } else {
+      // For non-MSI/MCI records (like Fijo, Cargo, etc.)
+      document.getElementById('no_mens').value = 0;
+      document.getElementById('total_meses').value = 0;
+    }
   }
 </script>
