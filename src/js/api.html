@@ -10,6 +10,7 @@
     editBalance: (rowNum, data, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).editarBalance(rowNum, data),
     getWallet: (cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).getWalletData(),
     updateWallet: (tableNum, filters, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).updateWalletFilters(tableNum, filters),
-    editWallet: (rowNum, data, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).editarWallet(rowNum, data)
+    editWallet: (rowNum, data, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).editarWallet(rowNum, data),
+    addWallet: (data, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).agregarWallet(data)
   };
 </script>

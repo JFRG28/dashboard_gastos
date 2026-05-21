@@ -304,3 +304,19 @@ function editarWallet(rowNum, data) {
   SpreadsheetApp.flush();
   return "Registro de App wallet actualizado correctamente.";
 }
+
+function agregarWallet(data) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('app wallet');
+  if (!sheet) throw new Error("La hoja 'app wallet' no existe.");
+
+  const nextRow = sheet.getLastRow() + 1;
+
+  sheet.getRange(nextRow, 2).setValue(Number(data.monto) || 0);
+  sheet.getRange(nextRow, 3).setValue(data.tarjeta);
+  sheet.getRange(nextRow, 4).setValue(data.mes);
+  sheet.getRange(nextRow, 5).setValue(Number(data.anio) || data.anio);
+
+  SpreadsheetApp.flush();
+  return "Registro agregado a App wallet correctamente.";
+}

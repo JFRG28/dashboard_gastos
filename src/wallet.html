@@ -61,7 +61,8 @@
   <div class="card-header bg-white border-0 py-3 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
     <div class="d-flex align-items-center gap-2">
       <h5 class="m-0 text-dark fw-bold"><i class="fa-solid fa-wallet text-primary me-2"></i> Registros de Wallet</h5>
-      <span class="badge bg-light text-secondary rounded-pill fw-medium" id="wallet-count-badge">0 registros</span>
+      <span class="badge bg-light text-secondary rounded-pill fw-medium me-2" id="wallet-count-badge">0 registros</span>
+      <button class="btn btn-primary btn-sm fw-bold shadow-sm" onclick="abrirAddWallet()"><i class="fa-solid fa-plus me-1"></i> Agregar Registro</button>
     </div>
     
     <!-- Table filters -->
@@ -176,6 +177,62 @@
         <div class="modal-footer bg-light border-0 py-3" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
           <button type="button" class="btn btn-outline-secondary px-4 border-0" data-bs-dismiss="modal">Cancelar</button>
           <button type="submit" id="btn-save-wallet" class="btn btn-primary px-4 fw-bold"><i class="fa-solid fa-floppy-disk me-2"></i>Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add Wallet Modal -->
+<div class="modal fade" id="modalAddWallet" tabindex="-1" aria-labelledby="modalAddWalletLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+      <div class="modal-header bg-success text-white border-0 py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <h5 class="modal-title fw-bold" id="modalAddWalletLabel"><i class="fa-solid fa-plus me-2"></i>Nuevo Registro Wallet</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="form-add-wallet" onsubmit="submitAddWallet(event)">
+        <div class="modal-body p-4">
+          <div class="row g-3">
+            <!-- Tarjeta -->
+            <div class="col-12">
+              <label for="wallet-add-tarjeta" class="form-label">Tarjeta</label>
+              <select id="wallet-add-tarjeta" class="form-select bg-light border-0" required>
+                <!-- Tarjetas dynamic -->
+              </select>
+            </div>
+            <!-- Mes -->
+            <div class="col-6">
+              <label for="wallet-add-mes" class="form-label">Mes</label>
+              <select id="wallet-add-mes" class="form-select bg-light border-0" required>
+                <!-- Meses dynamic -->
+              </select>
+            </div>
+            <!-- Año -->
+            <div class="col-6">
+              <label for="wallet-add-anio" class="form-label">Año</label>
+              <select id="wallet-add-anio" class="form-select bg-light border-0" required>
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+                <option value="2026" selected>2026</option>
+                <option value="2027">2027</option>
+              </select>
+            </div>
+            <!-- Monto -->
+            <div class="col-12">
+              <label for="wallet-add-monto" class="form-label">Monto</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-0">$</span>
+                <input type="number" id="wallet-add-monto" class="form-control bg-light border-0" step="0.01" required>
+              </div>
+            </div>
+          </div>
+          <!-- Status message inside modal -->
+          <div id="wallet-add-output" class="text-center mt-3 d-none"></div>
+        </div>
+        <div class="modal-footer bg-light border-0 py-3" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+          <button type="button" class="btn btn-outline-secondary px-4 border-0" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" id="btn-create-wallet" class="btn btn-success px-4 fw-bold"><i class="fa-solid fa-plus me-2"></i>Guardar Registro</button>
         </div>
       </form>
     </div>

@@ -999,6 +999,19 @@
     const editMes = document.getElementById('wallet-edit-mes');
     editMes.innerHTML = '';
     meses.forEach(m => editMes.add(new Option(m, m)));
+
+    // Fill Modal Add selectors
+    const addTar = document.getElementById('wallet-add-tarjeta');
+    if (addTar) {
+      addTar.innerHTML = '';
+      tarjetas.forEach(t => addTar.add(new Option(t, t)));
+    }
+
+    const addMes = document.getElementById('wallet-add-mes');
+    if (addMes) {
+      addMes.innerHTML = '';
+      meses.forEach(m => addMes.add(new Option(m, m)));
+    }
   }
 
   function onWalletFilterChange(tableNum) {
@@ -1192,6 +1205,67 @@
           modalEditWalletBS.hide();
         }
         cargarWallet(); // Reload data & update filters
+      }, 1200);
+    }, err => {
+      out.className = "text-center mt-3 small fw-bold text-danger";
+      out.innerText = "Error: " + err;
+      btn.disabled = false;
+    });
+  }
+
+  let modalAddWalletBS = null;
+
+  function abrirAddWallet() {
+    // Reset values in the add wallet form
+    document.getElementById('wallet-add-monto').value = '';
+    
+    // Select default values matching T1 calculator filters if possible
+    const t1Tar = document.getElementById('wallet-t1-tarjeta').value;
+    const t1Mes = document.getElementById('wallet-t1-mes').value;
+    const t1Anio = document.getElementById('wallet-t1-anio').value;
+    
+    if (t1Tar) document.getElementById('wallet-add-tarjeta').value = t1Tar;
+    if (t1Mes) document.getElementById('wallet-add-mes').value = t1Mes;
+    if (t1Anio) document.getElementById('wallet-add-anio').value = t1Anio;
+
+    // Reset status outputs
+    const out = document.getElementById('wallet-add-output');
+    out.className = 'd-none';
+    out.innerText = '';
+    document.getElementById('btn-create-wallet').disabled = false;
+
+    if (!modalAddWalletBS) {
+      modalAddWalletBS = new bootstrap.Modal(document.getElementById('modalAddWallet'));
+    }
+    modalAddWalletBS.show();
+  }
+
+  function submitAddWallet(e) {
+    e.preventDefault();
+
+    const btn = document.getElementById('btn-create-wallet');
+    const out = document.getElementById('wallet-add-output');
+    btn.disabled = true;
+
+    out.className = "text-center mt-3 small fw-bold text-primary";
+    out.innerHTML = '<div class="spinner-border spinner-border-sm me-2" role="status"></div>Guardando registro...';
+
+    const payload = {
+      tarjeta: document.getElementById('wallet-add-tarjeta').value,
+      mes: document.getElementById('wallet-add-mes').value,
+      anio: parseInt(document.getElementById('wallet-add-anio').value) || 2026,
+      monto: parseFloat(document.getElementById('wallet-add-monto').value) || 0
+    };
+
+    API.addWallet(payload, res => {
+      out.className = "text-center mt-3 small fw-bold text-success";
+      out.innerText = res;
+
+      setTimeout(() => {
+        if (modalAddWalletBS) {
+          modalAddWalletBS.hide();
+        }
+        cargarWallet(); // Reload data & update metrics
       }, 1200);
     }, err => {
       out.className = "text-center mt-3 small fw-bold text-danger";
