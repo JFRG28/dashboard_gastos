@@ -227,6 +227,170 @@ function eliminarGasto(id) {
   return "Registro #" + id + " eliminado y secuencia de IDs reajustada correctamente.";
 }
 
+function eliminarGastos(ids) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('unificado_v4');
+  if (!sheet) throw new Error("La hoja 'unificado_v4' no existe.");
+  
+  const data = sheet.getDataRange().getValues();
+  const rowIndicesToDelete = [];
+  
+  // Convert ids to numbers/strings for robust matching
+  const targetIds = ids.map(id => parseInt(id)).filter(id => !isNaN(id));
+  
+  for (let i = 1; i < data.length; i++) {
+    const rowIdNum = parseInt(data[i][0]);
+    if (!isNaN(rowIdNum) && targetIds.includes(rowIdNum)) {
+      rowIndicesToDelete.push(i + 1); // Google Sheets row numbers are 1-based
+    }
+  }
+  
+  if (rowIndicesToDelete.length === 0) {
+    throw new Error("No se encontraron registros con los IDs proporcionados.");
+  }
+  
+  // Sort row indices in descending order to avoid shift issues
+  rowIndicesToDelete.sort((a, b) => b - a);
+  
+  for (let i = 0; i < rowIndicesToDelete.length; i++) {
+    sheet.deleteRow(rowIndicesToDelete[i]);
+  }
+  
+  // Reindex everything to guarantee no gaps or duplicate IDs
+  reindexarTodo();
+  
+  return "Se eliminaron " + rowIndicesToDelete.length + " registros correctamente.";
+}
+
+function duplicarGastos(ids) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('unificado_v4');
+  if (!sheet) throw new Error("La hoja 'unificado_v4' no existe.");
+  
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) throw new Error("No hay datos para duplicar.");
+  
+  // Find maximum ID to allocate new IDs starting from maxId + 1
+  let maxId = 0;
+  for (let i = 1; i < data.length; i++) {
+    const val = parseInt(data[i][0]);
+    if (!isNaN(val) && val > maxId) {
+      maxId = val;
+    }
+  }
+  
+  // Map row IDs to their row data
+  const targetIds = ids.map(id => parseInt(id)).filter(id => !isNaN(id));
+  const rowsToDuplicate = [];
+  
+  for (let i = 1; i < data.length; i++) {
+    const rowIdNum = parseInt(data[i][0]);
+    if (!isNaN(rowIdNum) && targetIds.includes(rowIdNum)) {
+      rowsToDuplicate.push(data[i]);
+    }
+  }
+  
+  if (rowsToDuplicate.length === 0) {
+    throw new Error("No se encontraron registros con los IDs proporcionados.");
+  }
+  
+  const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  
+  // Helper to parse dates robustly
+  function parsearFecha(val) {
+    if (!val) return null;
+    if (val instanceof Date) {
+      return new Date(val.getTime());
+    }
+    const str = String(val).trim();
+    if (!str) return null;
+    const parts = str.split('-');
+    if (parts.length === 3) {
+      const y = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10) - 1;
+      const d = parseInt(parts[2], 10);
+      const f = new Date(y, m, d);
+      if (!isNaN(f.getTime())) return f;
+    }
+    const f = new Date(str);
+    if (!isNaN(f.getTime())) return f;
+    return null;
+  }
+  
+  // Helper to add 1 month
+  function sumarUnMes(fechaOriginal) {
+    if (!fechaOriginal) return null;
+    const nuevaFecha = new Date(fechaOriginal.getTime());
+    const mesActual = nuevaFecha.getMonth();
+    nuevaFecha.setMonth(mesActual + 1);
+    if (nuevaFecha.getMonth() !== (mesActual + 1) % 12) {
+      nuevaFecha.setDate(0);
+    }
+    return nuevaFecha;
+  }
+  
+  // Helper to format as yyyy-MM-dd
+  function formatearFecha(date) {
+    if (!date) return "";
+    const timezone = Session.getScriptTimeZone();
+    return Utilities.formatDate(date, timezone, "yyyy-MM-dd");
+  }
+  
+  const nuevasFilas = [];
+  
+  for (let i = 0; i < rowsToDuplicate.length; i++) {
+    const originalRow = rowsToDuplicate[i];
+    
+    // Copy values
+    const newRow = [...originalRow];
+    
+    // Assign new ID
+    maxId++;
+    newRow[0] = maxId;
+    
+    // Parse original dates
+    const fechaCargoOrig = parsearFecha(originalRow[7]);
+    const fechaPagoOrig = parsearFecha(originalRow[8]);
+    
+    // Advance dates by 1 month
+    const fechaCargoNueva = sumarUnMes(fechaCargoOrig);
+    const fechaPagoNueva = sumarUnMes(fechaPagoOrig);
+    
+    newRow[7] = fechaCargoNueva ? formatearFecha(fechaCargoNueva) : "";
+    newRow[8] = fechaPagoNueva ? formatearFecha(fechaPagoNueva) : "";
+    
+    // Recalculate Month name and Year from the new fecha_cargo if available
+    if (fechaCargoNueva) {
+      newRow[5] = meses[fechaCargoNueva.getMonth()];
+      newRow[6] = fechaCargoNueva.getFullYear();
+    }
+    
+    // Handle installments MSI / MCI
+    let noMens = parseInt(originalRow[10]) || 0;
+    const totalMeses = parseInt(originalRow[11]) || 0;
+    if (totalMeses > 0) {
+      noMens = noMens + 1;
+      if (noMens > totalMeses) {
+        noMens = 1;
+      }
+    }
+    newRow[10] = noMens;
+    
+    nuevasFilas.push(newRow);
+  }
+  
+  // Append all new rows to the sheet
+  if (nuevasFilas.length > 0) {
+    const startRow = sheet.getLastRow() + 1;
+    const numRows = nuevasFilas.length;
+    const numCols = nuevasFilas[0].length;
+    sheet.getRange(startRow, 1, numRows, numCols).setValues(nuevasFilas);
+  }
+  
+  return "Se duplicaron " + nuevasFilas.length + " registros correctamente.";
+}
+
+
 function getCalculosData() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('cálculos');

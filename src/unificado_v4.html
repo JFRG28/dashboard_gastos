@@ -153,10 +153,27 @@
 
     <!-- Table Container -->
     <div id="unificado-table-container" class="d-none">
+      <!-- Bulk Actions Bar -->
+      <div id="bulk-actions-bar" class="d-none align-items-center justify-content-between p-3 bg-light border-bottom">
+        <div class="d-flex align-items-center">
+          <span class="badge bg-primary rounded-pill me-2 px-2 py-1" id="bulk-select-count">0</span>
+          <span class="text-muted small fw-bold uppercase-tracking">Seleccionados</span>
+        </div>
+        <div>
+          <button class="btn btn-outline-primary btn-sm rounded-pill me-2 px-3 fw-bold" onclick="bulkDuplicar()">
+            <i class="fa-solid fa-copy me-1"></i> Duplicar
+          </button>
+          <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold" onclick="bulkEliminar()">
+            <i class="fa-solid fa-trash me-1"></i> Eliminar
+          </button>
+        </div>
+      </div>
+
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light">
             <tr>
+              <th scope="col" class="text-center" style="width: 40px;"><input type="checkbox" id="select-all-rows" onclick="toggleSelectAllRows(this)"></th>
               <th scope="col" class="sortable text-center" onclick="sortBy('ID', this)" style="width: 70px;">ID <i class="fa-solid fa-sort ms-1 sort-icon text-muted"></i></th>
               <th scope="col" class="sortable" onclick="sortBy('Concepto', this)">Concepto <i class="fa-solid fa-sort ms-1 sort-icon text-muted"></i></th>
               <th scope="col" class="sortable text-end" onclick="sortBy('Monto', this)" style="width: 140px;">Monto <i class="fa-solid fa-sort ms-1 sort-icon text-muted"></i></th>

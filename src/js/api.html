@@ -5,6 +5,8 @@
     getUnificadoData: (cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).getUnificadoData(),
     edit: (id, data, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).editarGasto(id, data),
     deleteGasto: (id, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).eliminarGasto(id),
+    deleteGastos: (ids, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).eliminarGastos(ids),
+    duplicateGastos: (ids, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).duplicarGastos(ids),
     getCalculos: (cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).getCalculosData(),
     updateCalculos: (tableNum, filters, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).updateCalculosTable(tableNum, filters),
     getBalance: (cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).getBalanceData(),
