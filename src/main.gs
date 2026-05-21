@@ -326,6 +326,17 @@ function duplicarGastos(ids, customFields) {
     newRow[7] = "";
     newRow[8] = "";
     
+    // Increment no_mens by 1 if tipo_gasto is MSI or MCI
+    const tipo = String(newRow[3] || '').toUpperCase();
+    if (['MSI', 'MCI'].includes(tipo)) {
+      const current = parseInt(newRow[10]) || 0;
+      const total = parseInt(newRow[11]) || 0;
+      if (current + 1 > total && total > 0) {
+        throw new Error("El registro #" + originalRow[0] + " ya alcanzó su última mensualidad (" + total + "/" + total + "). No se permite duplicarlo.");
+      }
+      newRow[10] = current + 1;
+    }
+    
     nuevasFilas.push(newRow);
   }
   

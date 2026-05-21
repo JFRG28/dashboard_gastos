@@ -1354,7 +1354,7 @@
     if (['MSI', 'MCI'].includes(tipo)) {
       const current = parseInt(item.noMens) || 0;
       const total = parseInt(item.totalMeses) || 0;
-      if (current >= total && total > 0) {
+      if (current + 1 > total && total > 0) {
         alert("Se alcanzó la última mensualidad del registro original. No se permite duplicarlo");
         return;
       }
@@ -1532,7 +1532,7 @@
         if (['MSI', 'MCI'].includes(tipo)) {
           const current = parseInt(item.noMens) || 0;
           const total = parseInt(item.totalMeses) || 0;
-          if (current >= total && total > 0) {
+          if (current + 1 > total && total > 0) {
             invalidIds.push(id);
           }
         }
