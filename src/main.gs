@@ -294,48 +294,6 @@ function duplicarGastos(ids) {
     throw new Error("No se encontraron registros con los IDs proporcionados.");
   }
   
-  const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-  
-  // Helper to parse dates robustly
-  function parsearFecha(val) {
-    if (!val) return null;
-    if (val instanceof Date) {
-      return new Date(val.getTime());
-    }
-    const str = String(val).trim();
-    if (!str) return null;
-    const parts = str.split('-');
-    if (parts.length === 3) {
-      const y = parseInt(parts[0], 10);
-      const m = parseInt(parts[1], 10) - 1;
-      const d = parseInt(parts[2], 10);
-      const f = new Date(y, m, d);
-      if (!isNaN(f.getTime())) return f;
-    }
-    const f = new Date(str);
-    if (!isNaN(f.getTime())) return f;
-    return null;
-  }
-  
-  // Helper to add 1 month
-  function sumarUnMes(fechaOriginal) {
-    if (!fechaOriginal) return null;
-    const nuevaFecha = new Date(fechaOriginal.getTime());
-    const mesActual = nuevaFecha.getMonth();
-    nuevaFecha.setMonth(mesActual + 1);
-    if (nuevaFecha.getMonth() !== (mesActual + 1) % 12) {
-      nuevaFecha.setDate(0);
-    }
-    return nuevaFecha;
-  }
-  
-  // Helper to format as yyyy-MM-dd
-  function formatearFecha(date) {
-    if (!date) return "";
-    const timezone = Session.getScriptTimeZone();
-    return Utilities.formatDate(date, timezone, "yyyy-MM-dd");
-  }
-  
   const nuevasFilas = [];
   
   for (let i = 0; i < rowsToDuplicate.length; i++) {
@@ -348,33 +306,9 @@ function duplicarGastos(ids) {
     maxId++;
     newRow[0] = maxId;
     
-    // Parse original dates
-    const fechaCargoOrig = parsearFecha(originalRow[7]);
-    const fechaPagoOrig = parsearFecha(originalRow[8]);
-    
-    // Advance dates by 1 month
-    const fechaCargoNueva = sumarUnMes(fechaCargoOrig);
-    const fechaPagoNueva = sumarUnMes(fechaPagoOrig);
-    
-    newRow[7] = fechaCargoNueva ? formatearFecha(fechaCargoNueva) : "";
-    newRow[8] = fechaPagoNueva ? formatearFecha(fechaPagoNueva) : "";
-    
-    // Recalculate Month name and Year from the new fecha_cargo if available
-    if (fechaCargoNueva) {
-      newRow[5] = meses[fechaCargoNueva.getMonth()];
-      newRow[6] = fechaCargoNueva.getFullYear();
-    }
-    
-    // Handle installments MSI / MCI
-    let noMens = parseInt(originalRow[10]) || 0;
-    const totalMeses = parseInt(originalRow[11]) || 0;
-    if (totalMeses > 0) {
-      noMens = noMens + 1;
-      if (noMens > totalMeses) {
-        noMens = 1;
-      }
-    }
-    newRow[10] = noMens;
+    // Set Fecha Cargo and Fecha Pago to blank
+    newRow[7] = "";
+    newRow[8] = "";
     
     nuevasFilas.push(newRow);
   }
