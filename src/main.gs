@@ -48,3 +48,27 @@ function registrarGasto(form) {
   sheet.appendRow(nuevaFila);
   return "Registro #" + nextId + " guardado correctamente.";
 }
+
+function getUnificadoData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('unificado_v4');
+  if (!sheet) return { headers: [], data: [] };
+  
+  const values = sheet.getDataRange().getValues();
+  if (values.length === 0) return { headers: [], data: [] };
+  
+  const headers = values[0];
+  const timezone = Session.getScriptTimeZone();
+  
+  const data = values.slice(1).map(row => {
+    return row.map(val => {
+      if (val instanceof Date) {
+        // Return YYYY-MM-DD string to avoid timezone parsing issues on the frontend
+        return Utilities.formatDate(val, timezone, "yyyy-MM-dd");
+      }
+      return val;
+    });
+  });
+  
+  return { headers, data };
+}

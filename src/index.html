@@ -5,10 +5,51 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <?!= include('css/styles'); ?>
 </head>
-<body class="py-4">
-  <div class="container-fluid">
+<body class="bg-light pb-5">
+  <?!= include('navbar'); ?>
+  
+  <div class="container-fluid px-3 px-md-4">
+    <!-- Registration Section -->
     <div id="sec-registro" class="content-section">
       <?!= include('form_registro'); ?>
+    </div>
+
+    <!-- Unificado View Section -->
+    <div id="sec-unificado_v4" class="content-section d-none">
+      <?!= include('unificado_v4'); ?>
+    </div>
+
+    <!-- Calculations Section Placeholder -->
+    <div id="sec-cálculos" class="content-section d-none">
+      <div class="container pt-4">
+        <div class="card p-5 text-center shadow-sm border-0">
+          <i class="fa-solid fa-calculator fa-4x text-muted mb-3"></i>
+          <h3 class="fw-bold">📈 Cálculos</h3>
+          <p class="text-secondary mb-0">Sección en desarrollo</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Balance Section Placeholder -->
+    <div id="sec-balance" class="content-section d-none">
+      <div class="container pt-4">
+        <div class="card p-5 text-center shadow-sm border-0">
+          <i class="fa-solid fa-scale-balanced fa-4x text-muted mb-3"></i>
+          <h3 class="fw-bold">💰 Balance</h3>
+          <p class="text-secondary mb-0">Sección en desarrollo</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Debt Section Placeholder -->
+    <div id="sec-deuda" class="content-section d-none">
+      <div class="container pt-4">
+        <div class="card p-5 text-center shadow-sm border-0">
+          <i class="fa-solid fa-credit-card fa-4x text-muted mb-3"></i>
+          <h3 class="fw-bold">💳 Deuda</h3>
+          <p class="text-secondary mb-0">Sección en desarrollo</p>
+        </div>
+      </div>
     </div>
   </div>
 

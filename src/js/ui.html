@@ -1,5 +1,14 @@
 <script>
   let opcionesGlobales = null;
+  let rawUnificadoData = [];
+  let filteredData = [];
+  let unificadoHeaders = [];
+  let isDataLoaded = false;
+  
+  let currentPage = 1;
+  let pageSize = 20;
+  let currentSortCol = 'ID';
+  let currentSortDir = 'desc';
 
   window.onload = () => {
     const hoy = new Date();
@@ -18,7 +27,6 @@
     actualizarAbrev();
   }
 
-
   function submitForm() {
     const form = document.getElementById('formGasto');
     const out = document.getElementById('output');
@@ -32,6 +40,7 @@
     API.save(data, res => {
       out.innerText = res;
       form.reset();
+      isDataLoaded = false; // Mark data as stale to reload on next visit
       window.onload();
       document.getElementById('btnSubmit').disabled = false;
     }, err => { alert(err); document.getElementById('btnSubmit').disabled = false; });
@@ -45,6 +54,397 @@
   function actualizarAbrev() {
     const f = new Date(document.getElementById('fecha_cargo').value + "T00:00:00");
     const meses = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
-    document.getElementById('gasto_x_mes').value = meses[f.getMonth()];
+    const el = document.getElementById('gasto_x_mes');
+    if (el) el.value = meses[f.getMonth()];
+  }
+
+  /* Navigation Functionality */
+  function nav(sectionId, el) {
+    document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+      link.classList.remove('active');
+    });
+    if (el) {
+      el.classList.add('active');
+    } else {
+      // Find element matching sectionId link if called programmatic
+      const links = document.querySelectorAll('.navbar-nav .nav-link');
+      links.forEach(l => {
+        if (l.getAttribute('onclick') && l.getAttribute('onclick').includes(sectionId)) {
+          l.classList.add('active');
+        }
+      });
+    }
+
+    document.querySelectorAll('.content-section').forEach(sec => {
+      sec.classList.add('d-none');
+    });
+
+    const target = document.getElementById('sec-' + sectionId);
+    if (target) {
+      target.classList.remove('d-none');
+    }
+
+    if (sectionId === 'unificado_v4') {
+      if (!isDataLoaded) {
+        cargarDatosUnificado();
+      }
+    }
+  }
+
+  /* Load Unificado Sheet Data */
+  function cargarDatosUnificado() {
+    const spinner = document.getElementById('unificado-loading');
+    const tableCont = document.getElementById('unificado-table-container');
+    
+    spinner.classList.remove('d-none');
+    tableCont.classList.add('d-none');
+
+    API.getUnificadoData(res => {
+      unificadoHeaders = res.headers;
+      
+      // Helper to map index dynamically by matching string in header
+      const getHeaderIndex = (hName) => {
+        return unificadoHeaders.findIndex(h => h.toLowerCase().includes(hName.toLowerCase()));
+      };
+
+      // Identify column indices based on sheet headers
+      const colIndices = {
+        id: getHeaderIndex("id"),
+        concepto: getHeaderIndex("concepto"),
+        monto: getHeaderIndex("monto"),
+        tipo: getHeaderIndex("tipo"),
+        formaPago: getHeaderIndex("forma"),
+        mesCargo: getHeaderIndex("mes cargo") !== -1 ? getHeaderIndex("mes cargo") : getHeaderIndex("mes"),
+        anioCargo: getHeaderIndex("año") !== -1 ? getHeaderIndex("año") : getHeaderIndex("anio"),
+        fechaCargo: getHeaderIndex("fecha cargo") !== -1 ? getHeaderIndex("fecha cargo") : getHeaderIndex("fecha de cargo") !== -1 ? getHeaderIndex("fecha de cargo") : 7,
+        fechaPago: getHeaderIndex("fecha pago") !== -1 ? getHeaderIndex("fecha pago") : getHeaderIndex("fecha de pago") !== -1 ? getHeaderIndex("fecha de pago") : 8,
+        categoria: getHeaderIndex("categor"),
+        noMens: getHeaderIndex("no_mens") !== -1 ? getHeaderIndex("no_mens") : getHeaderIndex("mes actual") !== -1 ? getHeaderIndex("mes actual") : getHeaderIndex("no. mens"),
+        totalMeses: getHeaderIndex("total_meses") !== -1 ? getHeaderIndex("total_meses") : getHeaderIndex("total de meses"),
+        tag: getHeaderIndex("tag"),
+        seDivide: getHeaderIndex("divide"),
+        gastoXMes: getHeaderIndex("gasto_x_mes") !== -1 ? getHeaderIndex("gasto_x_mes") : getHeaderIndex("abrev")
+      };
+
+      rawUnificadoData = res.data.map(row => {
+        return {
+          id: colIndices.id !== -1 ? row[colIndices.id] : "",
+          concepto: colIndices.concepto !== -1 ? row[colIndices.concepto] : "",
+          monto: colIndices.monto !== -1 ? parseFloat(row[colIndices.monto]) || 0 : 0,
+          tipo: colIndices.tipo !== -1 ? row[colIndices.tipo] : "",
+          formaPago: colIndices.formaPago !== -1 ? row[colIndices.formaPago] : "",
+          mesCargo: colIndices.mesCargo !== -1 ? row[colIndices.mesCargo] : "",
+          anioCargo: colIndices.anioCargo !== -1 ? row[colIndices.anioCargo] : "",
+          fechaCargo: colIndices.fechaCargo !== -1 ? row[colIndices.fechaCargo] : "",
+          fechaPago: colIndices.fechaPago !== -1 ? row[colIndices.fechaPago] : "",
+          categoria: colIndices.categoria !== -1 ? row[colIndices.categoria] : "",
+          noMens: colIndices.noMens !== -1 ? parseInt(row[colIndices.noMens]) || 0 : 0,
+          totalMeses: colIndices.totalMeses !== -1 ? parseInt(row[colIndices.totalMeses]) || 0 : 0,
+          tag: colIndices.tag !== -1 ? row[colIndices.tag] : "",
+          seDivide: colIndices.seDivide !== -1 ? row[colIndices.seDivide] : "",
+          gastoXMes: colIndices.gastoXMes !== -1 ? row[colIndices.gastoXMes] : ""
+        };
+      });
+
+      populateFilterSelectors();
+      
+      // Default sort (descending by ID)
+      currentSortCol = 'ID';
+      currentSortDir = 'desc';
+      // Reset headers icons UI
+      document.querySelectorAll('th.sortable i').forEach(icon => {
+        icon.className = 'fa-solid fa-sort ms-1 sort-icon text-muted';
+      });
+      const idTh = document.querySelector('th.sortable[onclick*="ID"]');
+      if (idTh) {
+        const icon = idTh.querySelector('i');
+        if (icon) icon.className = 'fa-solid fa-sort-down ms-1 sort-icon text-primary';
+      }
+
+      applyFilters();
+      
+      isDataLoaded = true;
+      spinner.classList.add('d-none');
+      tableCont.classList.remove('d-none');
+    }, err => {
+      spinner.classList.add('d-none');
+      alert("Error al cargar datos: " + err);
+    });
+  }
+
+  /* Populate Dynamic Dropdowns from Data */
+  function populateFilterSelectors() {
+    const selectMap = {
+      'filter-categoria': 'categoria',
+      'filter-tipo': 'tipo',
+      'filter-forma-pago': 'formaPago',
+      'filter-tag': 'tag',
+      'filter-se-divide': 'seDivide',
+      'filter-anio': 'anioCargo',
+      'filter-mes': 'mesCargo',
+      'filter-gasto-x-mes': 'gastoXMes'
+    };
+
+    for (let selectId in selectMap) {
+      const selectEl = document.getElementById(selectId);
+      if (!selectEl) continue;
+
+      const currVal = selectEl.value;
+      selectEl.innerHTML = '';
+      
+      const defaultText = (selectId === 'filter-categoria' || selectId === 'filter-forma-pago') ? 'Todas' : 'Todos';
+      selectEl.add(new Option(defaultText, ''));
+
+      const prop = selectMap[selectId];
+      const uniqueVals = [...new Set(rawUnificadoData.map(item => item[prop]))]
+        .filter(val => val !== null && val !== undefined && val !== '')
+        .sort((a, b) => {
+          if (typeof a === 'number' && typeof b === 'number') return b - a; // years sorted descending
+          return String(a).localeCompare(String(b), undefined, {numeric: true, sensitivity: 'base'});
+        });
+
+      uniqueVals.forEach(val => {
+        selectEl.add(new Option(val, val));
+      });
+
+      if (uniqueVals.includes(currVal)) {
+        selectEl.value = currVal;
+      }
+    }
+  }
+
+  /* Filter Logic */
+  function applyFilters() {
+    const query = document.getElementById('filter-concepto').value.toLowerCase().trim();
+    const cat = document.getElementById('filter-categoria').value;
+    const tipo = document.getElementById('filter-tipo').value;
+    const pago = document.getElementById('filter-forma-pago').value;
+    const tag = document.getElementById('filter-tag').value;
+    const divide = document.getElementById('filter-se-divide').value;
+    const anio = document.getElementById('filter-anio').value;
+    const mes = document.getElementById('filter-mes').value;
+    const gastoXMes = document.getElementById('filter-gasto-x-mes').value;
+    const desde = document.getElementById('filter-fecha-desde').value;
+    const hasta = document.getElementById('filter-fecha-hasta').value;
+    const minVal = parseFloat(document.getElementById('filter-monto-min').value) || null;
+    const maxVal = parseFloat(document.getElementById('filter-monto-max').value) || null;
+
+    filteredData = rawUnificadoData.filter(item => {
+      if (query && !item.concepto.toLowerCase().includes(query)) return false;
+      if (cat && item.categoria !== cat) return false;
+      if (tipo && item.tipo !== tipo) return false;
+      if (pago && item.formaPago !== pago) return false;
+      if (tag && item.tag !== tag) return false;
+      if (divide && item.seDivide !== divide) return false;
+      if (anio && String(item.anioCargo) !== anio) return false;
+      if (mes && item.mesCargo !== mes) return false;
+      if (gastoXMes && item.gastoXMes !== gastoXMes) return false;
+      if (desde && item.fechaCargo < desde) return false;
+      if (hasta && item.fechaCargo > hasta) return false;
+      if (minVal !== null && item.monto < minVal) return false;
+      if (maxVal !== null && item.monto > maxVal) return false;
+      return true;
+    });
+
+    currentPage = 1;
+    sortData();
+    updateKPIs();
+    renderTable();
+  }
+
+  /* Reset Filter Fields */
+  function resetFilters() {
+    document.getElementById('filter-concepto').value = '';
+    document.getElementById('filter-categoria').value = '';
+    document.getElementById('filter-tipo').value = '';
+    document.getElementById('filter-forma-pago').value = '';
+    document.getElementById('filter-tag').value = '';
+    document.getElementById('filter-se-divide').value = '';
+    document.getElementById('filter-anio').value = '';
+    document.getElementById('filter-mes').value = '';
+    document.getElementById('filter-gasto-x-mes').value = '';
+    document.getElementById('filter-fecha-desde').value = '';
+    document.getElementById('filter-fecha-hasta').value = '';
+    document.getElementById('filter-monto-min').value = '';
+    document.getElementById('filter-monto-max').value = '';
+    
+    applyFilters();
+  }
+
+  /* Update Dashboard Statistics */
+  function updateKPIs() {
+    const count = filteredData.length;
+    let total = 0;
+    filteredData.forEach(item => {
+      total += item.monto;
+    });
+
+    const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+
+    document.getElementById('kpi-total-gasto').innerText = fmt.format(total);
+    document.getElementById('kpi-total-registros').innerText = count;
+  }
+
+  /* Sort Logic */
+  function sortBy(columnKey, thElement) {
+    if (currentSortCol === columnKey) {
+      currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      currentSortCol = columnKey;
+      currentSortDir = 'asc';
+    }
+
+    document.querySelectorAll('th.sortable i').forEach(icon => {
+      icon.className = 'fa-solid fa-sort ms-1 sort-icon text-muted';
+    });
+    
+    const icon = thElement.querySelector('i');
+    if (icon) {
+      icon.className = `fa-solid fa-sort-${currentSortDir === 'asc' ? 'up' : 'down'} ms-1 sort-icon text-primary`;
+    }
+
+    sortData();
+    renderTable();
+  }
+
+  function sortData() {
+    filteredData.sort((a, b) => {
+      let valA = getSortValue(a, currentSortCol);
+      let valB = getSortValue(b, currentSortCol);
+
+      if (typeof valA === 'string' && typeof valB === 'string') {
+        return currentSortDir === 'asc' 
+          ? valA.localeCompare(valB, undefined, {numeric: true, sensitivity: 'base'}) 
+          : valB.localeCompare(valA, undefined, {numeric: true, sensitivity: 'base'});
+      } else {
+        return currentSortDir === 'asc' ? valA - valB : valB - valA;
+      }
+    });
+  }
+
+  function getSortValue(item, col) {
+    switch (col) {
+      case 'ID': return parseInt(item.id) || 0;
+      case 'Concepto': return (item.concepto || '').toLowerCase();
+      case 'Monto': return item.monto;
+      case 'Tipo': return (item.tipo || '').toLowerCase();
+      case 'Forma de Pago': return (item.formaPago || '').toLowerCase();
+      case 'Fecha de Cargo': return item.fechaCargo || '';
+      case 'Fecha de Pago': return item.fechaPago || '';
+      case 'Categoría': return (item.categoria || '').toLowerCase();
+      case 'Mensualidad': return item.noMens;
+      case 'Tag': return (item.tag || '').toLowerCase();
+      case 'Se Divide': return (item.seDivide || '').toLowerCase();
+      default: return '';
+    }
+  }
+
+  /* Render Table Content */
+  function renderTable() {
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = startIdx + pageSize;
+    const pageData = filteredData.slice(startIdx, endIdx);
+
+    const tbody = document.getElementById('unificado-tbody');
+    tbody.innerHTML = '';
+
+    if (filteredData.length === 0) {
+      document.getElementById('unificado-empty-state').classList.remove('d-none');
+      document.getElementById('unificado-tbody').innerHTML = '';
+      document.getElementById('pagination-buttons').innerHTML = '';
+      document.getElementById('pagination-info').innerText = 'Mostrando 0 registros';
+      return;
+    }
+
+    document.getElementById('unificado-empty-state').classList.add('d-none');
+
+    const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+
+    pageData.forEach(item => {
+      const tr = document.createElement('tr');
+      
+      let tipoBadgeClass = 'badge-tipo ';
+      const tVal = (item.tipo || '').toUpperCase();
+      if (tVal.includes('MSI')) tipoBadgeClass += 'badge-tipo-msi';
+      else if (tVal.includes('MCI')) tipoBadgeClass += 'badge-tipo-mci';
+      else tipoBadgeClass += 'badge-tipo-cargo';
+
+      const divVal = (item.seDivide || '').toUpperCase();
+      const isSi = ['SI', 'SÍ', 'YES', 'TRUE', '1'].includes(divVal);
+      const divideBadgeClass = isSi ? 'badge-se-divide-si' : 'badge-se-divide-no';
+      
+      const mensDisplay = item.totalMeses > 0 ? `${item.noMens} / ${item.totalMeses}` : '-';
+
+      tr.innerHTML = `
+        <td class="text-center text-secondary small fw-bold">${item.id || '-'}</td>
+        <td class="fw-medium">${item.concepto || '-'}</td>
+        <td class="text-end fw-bold text-dark">${fmt.format(item.monto)}</td>
+        <td class="text-center"><span class="badge ${tipoBadgeClass}">${item.tipo || '-'}</span></td>
+        <td class="text-center text-secondary small">${item.formaPago || '-'}</td>
+        <td class="text-center small">${item.fechaCargo || '-'}</td>
+        <td class="text-center small text-muted">${item.fechaPago || '-'}</td>
+        <td class="text-center"><span class="badge-category">${item.categoria || '-'}</span></td>
+        <td class="text-center small text-secondary">${mensDisplay}</td>
+        <td class="text-center"><span class="badge badge-tag">${item.tag || '-'}</span></td>
+        <td class="text-center"><span class="badge ${divideBadgeClass}">${item.seDivide || '-'}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    renderPaginationControls();
+  }
+
+  /* Render Pagination Elements */
+  function renderPaginationControls() {
+    const totalPages = Math.ceil(filteredData.length / pageSize);
+    const container = document.getElementById('pagination-buttons');
+    container.innerHTML = '';
+
+    const startRecord = filteredData.length > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+    const endRecord = Math.min(currentPage * pageSize, filteredData.length);
+    document.getElementById('pagination-info').innerText = `Mostrando ${startRecord} a ${endRecord} de ${filteredData.length} registros`;
+
+    if (totalPages <= 1) return;
+
+    const addPageItem = (page, label, active = false, disabled = false) => {
+      const li = document.createElement('li');
+      li.className = `page-item ${active ? 'active' : ''} ${disabled ? 'disabled' : ''}`;
+      
+      const a = document.createElement('a');
+      a.className = 'page-link';
+      a.href = '#';
+      a.innerHTML = label;
+      a.onclick = (e) => {
+        e.preventDefault();
+        if (!disabled && !active) {
+          currentPage = page;
+          renderTable();
+        }
+      };
+      li.appendChild(a);
+      container.appendChild(li);
+    };
+
+    addPageItem(1, '<i class="fa-solid fa-angles-left"></i>', false, currentPage === 1);
+    addPageItem(currentPage - 1, '<i class="fa-solid fa-angle-left"></i>', false, currentPage === 1);
+
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    if (endPage - startPage < 4) {
+      startPage = Math.max(1, endPage - 4);
+    }
+
+    for (let p = startPage; p <= endPage; p++) {
+      addPageItem(p, p, p === currentPage);
+    }
+
+    addPageItem(currentPage + 1, '<i class="fa-solid fa-angle-right"></i>', false, currentPage === totalPages);
+    addPageItem(totalPages, '<i class="fa-solid fa-angles-right"></i>', false, currentPage === totalPages);
+  }
+
+  function changePageSize(size) {
+    pageSize = parseInt(size);
+    currentPage = 1;
+    renderTable();
   }
 </script>

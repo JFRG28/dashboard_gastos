@@ -1,9 +1,163 @@
 <style>
-  body { background-color: #f4f7f6; }
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+  
+  body { 
+    background-color: #f6f8fb; 
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  
+  .navbar {
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  }
+  .navbar-nav .nav-link {
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    color: rgba(255,255,255,0.75) !important;
+  }
+  .navbar-nav .nav-link:hover {
+    color: #fff !important;
+    background-color: rgba(255,255,255,0.1);
+  }
+  .navbar-nav .nav-link.active {
+    color: #fff !important;
+    background-color: rgba(255,255,255,0.2) !important;
+    font-weight: 600;
+  }
+
   .table-container { overflow-x: auto; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
   .col-accion { width: 50px; text-align: center; color: #0d6efd; cursor: pointer; }
   .content-section { margin-top: 10px; }
-  .form-label { font-weight: 600; font-size: 0.9rem; }
-  .card { border: none; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+  .form-label { font-weight: 600; font-size: 0.9rem; color: #495057; }
+  .card { border: none; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
   .hidden-field { display: none; }
+
+  /* KPI Cards Gradients */
+  .kpi-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .kpi-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  }
+  .bg-grad-total {
+    background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+  }
+  .bg-grad-count {
+    background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+  }
+  .bg-grad-avg {
+    background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
+  }
+  .uppercase-tracking {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .kpi-icon-container {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Table Custom styles */
+  .table > :not(caption) > * > * {
+    padding: 0.9rem 0.75rem;
+    border-bottom-color: #f1f3f5;
+  }
+  .table thead th {
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6c757d;
+    border-bottom: 2px solid #e9ecef;
+    background-color: #f8f9fa;
+  }
+  th.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  th.sortable:hover {
+    background-color: #eef1f6 !important;
+    color: #212529 !important;
+  }
+  .sort-icon {
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+  }
+
+  /* Badges */
+  .badge-category {
+    background-color: rgba(13, 110, 253, 0.08);
+    color: #0d6efd;
+    font-weight: 500;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+  }
+  .badge-tipo {
+    font-weight: 600;
+    font-size: 0.7rem;
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
+    letter-spacing: 0.03em;
+  }
+  .badge-tipo-cargo {
+    background-color: #e0f2fe;
+    color: #0369a1;
+  }
+  .badge-tipo-msi {
+    background-color: #fef3c7;
+    color: #b45309;
+  }
+  .badge-tipo-mci {
+    background-color: #fee2e2;
+    color: #b91c1c;
+  }
+  .badge-se-divide-si {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+  .badge-se-divide-no {
+    background-color: #f3f4f6;
+    color: #374151;
+  }
+  .badge-tag {
+    background-color: rgba(108, 117, 125, 0.08);
+    color: #495057;
+    font-weight: 500;
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+  }
+  
+  /* Input Customization */
+  .form-control:focus, .form-select:focus {
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+    background-color: #fff !important;
+  }
+  
+  /* Pagination active state */
+  .pagination .page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2);
+  }
+  
+  .pagination .page-link {
+    color: #495057;
+    border: none;
+    margin: 0 2px;
+    border-radius: 6px !important;
+    font-weight: 500;
+  }
 </style>

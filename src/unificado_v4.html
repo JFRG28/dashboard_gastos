@@ -1,0 +1,206 @@
+<div class="container-fluid py-2">
+  <!-- KPI Dashboard Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-6">
+      <div class="card kpi-card bg-grad-total text-white h-100">
+        <div class="card-body d-flex align-items-center">
+          <div class="kpi-icon-container me-3 bg-white bg-opacity-25 rounded-circle p-3">
+            <i class="fa-solid fa-wallet fa-2x"></i>
+          </div>
+          <div>
+            <h6 class="card-subtitle mb-1 text-white-50 uppercase-tracking">Total Gasto Filtrado</h6>
+            <h3 class="card-title mb-0 fw-bold" id="kpi-total-gasto">$0.00</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6">
+      <div class="card kpi-card bg-grad-count text-white h-100">
+        <div class="card-body d-flex align-items-center">
+          <div class="kpi-icon-container me-3 bg-white bg-opacity-25 rounded-circle p-3">
+            <i class="fa-solid fa-list-check fa-2x"></i>
+          </div>
+          <div>
+            <h6 class="card-subtitle mb-1 text-white-50 uppercase-tracking">Registros Encontrados</h6>
+            <h3 class="card-title mb-0 fw-bold" id="kpi-total-registros">0</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-0 py-3 d-flex align-items-center justify-content-between">
+      <h5 class="mb-0 text-dark fw-bold"><i class="fa-solid fa-sliders text-primary me-2"></i> Filtros de Búsqueda</h5>
+      <button class="btn btn-outline-secondary btn-sm rounded-pill" onclick="resetFilters()">
+        <i class="fa-solid fa-rotate-left me-1"></i> Restablecer Filtros
+      </button>
+    </div>
+    <div class="card-body pt-0">
+      <div class="row g-3">
+        <!-- Text Search -->
+        <div class="col-12 col-md-4">
+          <label for="filter-concepto" class="form-label text-secondary small">Concepto</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+            <input type="text" id="filter-concepto" class="form-control bg-light border-0" placeholder="Buscar por concepto..." oninput="applyFilters()">
+          </div>
+        </div>
+
+        <!-- Categoría -->
+        <div class="col-6 col-md-2">
+          <label for="filter-categoria" class="form-label text-secondary small">Categoría</label>
+          <select id="filter-categoria" class="form-select bg-light border-0" onchange="applyFilters()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+
+        <!-- Tipo Gasto -->
+        <div class="col-6 col-md-2">
+          <label for="filter-tipo" class="form-label text-secondary small">Tipo</label>
+          <select id="filter-tipo" class="form-select bg-light border-0" onchange="applyFilters()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <!-- Forma Pago -->
+        <div class="col-6 col-md-2">
+          <label for="filter-forma-pago" class="form-label text-secondary small">Forma de Pago</label>
+          <select id="filter-forma-pago" class="form-select bg-light border-0" onchange="applyFilters()">
+            <option value="">Todas</option>
+          </select>
+        </div>
+
+        <!-- Tag -->
+        <div class="col-6 col-md-2">
+          <label for="filter-tag" class="form-label text-secondary small">Tag</label>
+          <select id="filter-tag" class="form-select bg-light border-0" onchange="applyFilters()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row g-3 mt-1">
+        <!-- Se Divide -->
+        <div class="col-6 col-md-2">
+          <label for="filter-se-divide" class="form-label text-secondary small">Se Divide</label>
+          <select id="filter-se-divide" class="form-select bg-light border-0" onchange="applyFilters()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <!-- Año -->
+        <div class="col-6 col-md-2">
+          <label for="filter-anio" class="form-label text-secondary small">Año</label>
+          <select id="filter-anio" class="form-select bg-light border-0" onchange="applyFilters()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <!-- Mes -->
+        <div class="col-6 col-md-2">
+          <label for="filter-mes" class="form-label text-secondary small">Mes</label>
+          <select id="filter-mes" class="form-select bg-light border-0" onchange="applyFilters()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <!-- Date Range: From -->
+        <div class="col-6 col-md-3">
+          <label for="filter-fecha-desde" class="form-label text-secondary small">Fecha Desde</label>
+          <input type="date" id="filter-fecha-desde" class="form-control bg-light border-0" onchange="applyFilters()">
+        </div>
+
+        <!-- Date Range: To -->
+        <div class="col-6 col-md-3">
+          <label for="filter-fecha-hasta" class="form-label text-secondary small">Fecha Hasta</label>
+          <input type="date" id="filter-fecha-hasta" class="form-control bg-light border-0" onchange="applyFilters()">
+        </div>
+      </div>
+
+      <div class="row g-3 mt-1">
+        <!-- Gasto por Mes -->
+        <div class="col-12 col-md-4">
+          <label for="filter-gasto-x-mes" class="form-label text-secondary small">Gasto por Mes</label>
+          <select id="filter-gasto-x-mes" class="form-select bg-light border-0" onchange="applyFilters()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <!-- Min Monto -->
+        <div class="col-6 col-md-4">
+          <label for="filter-monto-min" class="form-label text-secondary small">Monto Mínimo</label>
+          <input type="number" step="0.01" id="filter-monto-min" class="form-control bg-light border-0" placeholder="0.00" oninput="applyFilters()">
+        </div>
+        <!-- Max Monto -->
+        <div class="col-6 col-md-4">
+          <label for="filter-monto-max" class="form-label text-secondary small">Monto Máximo</label>
+          <input type="number" step="0.01" id="filter-monto-max" class="form-control bg-light border-0" placeholder="Ej: 5000" oninput="applyFilters()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <div class="card border-0 shadow-sm">
+    <!-- Loading overlay/spinner -->
+    <div id="unificado-loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="text-muted mt-2">Obteniendo registros desde Google Sheets...</p>
+    </div>
+
+    <!-- Table Container -->
+    <div id="unificado-table-container" class="d-none">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="sortable text-center" onclick="sortBy('ID', this)" style="width: 70px;">ID <i class="fa-solid fa-sort ms-1 sort-icon text-muted"></i></th>
+              <th scope="col" class="sortable" onclick="sortBy('Concepto', this)">Concepto <i class="fa-solid fa-sort ms-1 sort-icon text-muted"></i></th>
+              <th scope="col" class="sortable text-end" onclick="sortBy('Monto', this)" style="width: 140px;">Monto <i class="fa-solid fa-sort ms-1 sort-icon text-muted"></i></th>
+              <th scope="col" class="sortable text-center" onclick="sortBy('Tipo', this)" style="width: 110px;">Tipo <i class="fa-solid fa-sort ms-1 sort-icon text-muted"></i></th>
+              <th scope="col" class="sortable text-center" onclick="sortBy('Forma de Pago', this)">Pago <i class="fa-solid fa-sort ms-1 sort-icon text-muted"></i></th>
+              <th scope="col" class="sortable text-center" onclick="sortBy('Fecha de Cargo', this)" style="width: 130px;">Fecha Cargo <i class="fa-solid fa-sort ms-1 sort-icon text-muted"></i></th>
+              <th scope="col" class="sortable text-center" onclick="sortBy('Fecha de Pago', this)" style="width: 130px;">Fecha Pago <i class="fa-solid fa-sort ms-1 sort-icon text-muted"></i></th>
+              <th scope="col" class="sortable text-center" onclick="sortBy('Categoría', this)">Categoría <i class="fa-solid fa-sort ms-1 sort-icon text-muted"></i></th>
+              <th scope="col" class="sortable text-center" onclick="sortBy('Mensualidad', this)" style="width: 100px;">Mens. <i class="fa-solid fa-sort ms-1 sort-icon text-muted"></i></th>
+              <th scope="col" class="sortable text-center" onclick="sortBy('Tag', this)">Tag <i class="fa-solid fa-sort ms-1 sort-icon text-muted"></i></th>
+              <th scope="col" class="sortable text-center" onclick="sortBy('Se Divide', this)" style="width: 110px;">Divide <i class="fa-solid fa-sort ms-1 sort-icon text-muted"></i></th>
+            </tr>
+          </thead>
+          <tbody id="unificado-tbody">
+            <!-- Dynamic rows go here -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- No Data State -->
+      <div id="unificado-empty-state" class="text-center py-5 d-none">
+        <i class="fa-solid fa-circle-info fa-3x text-muted mb-3"></i>
+        <h5>No se encontraron registros</h5>
+        <p class="text-muted">Prueba a ajustar o restablecer los filtros de búsqueda.</p>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div class="card-footer bg-white border-0 py-3 d-flex flex-column flex-md-row align-items-center justify-content-between">
+        <div class="d-flex align-items-center mb-3 mb-md-0">
+          <span class="text-secondary small me-2">Mostrar</span>
+          <select id="pagination-size" class="form-select form-select-sm bg-light border-0 w-auto" onchange="changePageSize(this.value)">
+            <option value="10">10</option>
+            <option value="20" selected>20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+          <span class="text-secondary small ms-2" id="pagination-info">registros por página</span>
+        </div>
+        <nav>
+          <ul class="pagination pagination-sm mb-0" id="pagination-buttons">
+            <!-- Pagination items will be injected here -->
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
