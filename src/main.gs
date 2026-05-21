@@ -72,3 +72,38 @@ function getUnificadoData() {
   
   return { headers, data };
 }
+
+function editarGasto(id, form) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('unificado_v4');
+  if (!sheet) throw new Error("La hoja 'unificado_v4' no existe.");
+  
+  const data = sheet.getDataRange().getValues();
+  let targetRowIndex = -1;
+  
+  // Find row matching ID in column 1 (0-indexed 0)
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(id)) {
+      targetRowIndex = i + 1; // Google Sheets row numbers are 1-based
+      break;
+    }
+  }
+  
+  if (targetRowIndex === -1) {
+    throw new Error("Registro con ID #" + id + " no encontrado.");
+  }
+  
+  const fechaCargo = new Date(form.fecha_cargo + "T00:00:00");
+  const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  
+  const filaActualizada = [
+    parseInt(id), form.concepto, parseFloat(form.monto), form.tipo_gasto, form.forma_pago,
+    meses[fechaCargo.getMonth()], fechaCargo.getFullYear(), form.fecha_cargo,
+    form.fecha_pago || form.fecha_cargo, form.categoria, parseInt(form.no_mens) || 0,
+    parseInt(form.total_meses) || 0, form.tag, form.se_divide, form.gasto_x_mes
+  ];
+  
+  // Update the entire row in the sheet
+  sheet.getRange(targetRowIndex, 1, 1, filaActualizada.length).setValues([filaActualizada]);
+  return "Registro #" + id + " guardado correctamente.";
+}

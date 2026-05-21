@@ -20,11 +20,21 @@
     const map = {'tipo_gasto': opts.tiposGasto, 'forma_pago': opts.formasPago, 'tag': opts.tags, 'categoria': opts.categorias, 'se_divide': opts.seDivide, 'gasto_x_mes': opts.abrevs};
     for (let id in map) {
       const el = document.getElementById(id);
-      if (!el) continue;
-      el.innerHTML = '';
-      map[id].forEach(o => el.add(new Option(o, o)));
+      if (el) {
+        el.innerHTML = '';
+        map[id].forEach(o => el.add(new Option(o, o)));
+      }
+      
+      const editEl = document.getElementById('edit-' + id);
+      if (editEl) {
+        editEl.innerHTML = '';
+        map[id].forEach(o => editEl.add(new Option(o, o)));
+      }
     }
     actualizarAbrev();
+    if (typeof actualizarEditAbrev === 'function') {
+      actualizarEditAbrev();
+    }
   }
 
   function submitForm() {
@@ -387,6 +397,11 @@
         <td class="text-center small text-secondary">${mensDisplay}</td>
         <td class="text-center"><span class="badge badge-tag">${item.tag || '-'}</span></td>
         <td class="text-center"><span class="badge ${divideBadgeClass}">${item.seDivide || '-'}</span></td>
+        <td class="text-center">
+          <button class="btn btn-sm btn-outline-primary rounded-circle border-0" onclick="abrirModalEdicion(${item.id})">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+        </td>
       `;
       tbody.appendChild(tr);
     });
@@ -446,5 +461,99 @@
     pageSize = parseInt(size);
     currentPage = 1;
     renderTable();
+  }
+
+  /* Edit Modal Functionality */
+  let modalEdicionBS = null;
+
+  function abrirModalEdicion(id) {
+    const item = rawUnificadoData.find(d => String(d.id) === String(id));
+    if (!item) return;
+
+    document.getElementById('edit-id-label').innerText = item.id;
+    document.getElementById('edit-id').value = item.id;
+    document.getElementById('edit-concepto').value = item.concepto || '';
+    document.getElementById('edit-monto').value = item.monto || '';
+    document.getElementById('edit-tipo_gasto').value = item.tipo || '';
+    document.getElementById('edit-forma_pago').value = item.formaPago || '';
+    document.getElementById('edit-fecha_cargo').value = item.fechaCargo || '';
+    document.getElementById('edit-fecha_pago').value = item.fechaPago || '';
+    document.getElementById('edit-categoria').value = item.categoria || '';
+    document.getElementById('edit-no_mens').value = item.noMens || 0;
+    document.getElementById('edit-total_meses').value = item.totalMeses || 0;
+    document.getElementById('edit-tag').value = item.tag || '';
+    document.getElementById('edit-se_divide').value = item.seDivide || '';
+    
+    toggleEditMensualidades();
+    
+    // Set gasto_x_mes
+    const abrevEl = document.getElementById('edit-gasto_x_mes');
+    if (item.gastoXMes) {
+      abrevEl.value = item.gastoXMes;
+    } else {
+      actualizarEditAbrev();
+    }
+    
+    document.getElementById('edit-output').innerText = '';
+    document.getElementById('btnEditSubmit').disabled = false;
+
+    // Show modal using Bootstrap JS API
+    if (!modalEdicionBS) {
+      modalEdicionBS = new bootstrap.Modal(document.getElementById('editModal'));
+    }
+    modalEdicionBS.show();
+  }
+
+  function toggleEditMensualidades() {
+    const el = document.getElementById('edit-tipo_gasto');
+    if (!el) return;
+    const isMens = ['MSI', 'MCI'].includes(el.value);
+    document.getElementById('edit-mensualidadesGroup').classList.toggle('hidden-field', !isMens);
+  }
+
+  function actualizarEditAbrev() {
+    const cargoEl = document.getElementById('edit-fecha_cargo');
+    const abrevEl = document.getElementById('edit-gasto_x_mes');
+    if (!cargoEl || !abrevEl || !cargoEl.value) return;
+    
+    const f = new Date(cargoEl.value + "T00:00:00");
+    const meses = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
+    abrevEl.value = meses[f.getMonth()];
+  }
+
+  function submitEditForm() {
+    const form = document.getElementById('formEditGasto');
+    const out = document.getElementById('edit-output');
+    const btn = document.getElementById('btnEditSubmit');
+    if (!form.checkValidity()) return form.reportValidity();
+    
+    const id = document.getElementById('edit-id').value;
+    const data = {};
+    new FormData(form).forEach((v, k) => data[k] = v);
+    
+    btn.disabled = true;
+    out.innerText = "Guardando cambios...";
+    out.className = "text-center mt-3 small fw-bold text-muted";
+
+    API.edit(id, data, res => {
+      out.innerText = res;
+      out.className = "text-center mt-3 small fw-bold text-success";
+      
+      // Mark data as stale to trigger refresh
+      isDataLoaded = false;
+      
+      // Delay closing modal and reloading
+      setTimeout(() => {
+        if (modalEdicionBS) {
+          modalEdicionBS.hide();
+        }
+        cargarDatosUnificado();
+      }, 1200);
+      
+    }, err => {
+      out.innerText = "Error: " + err;
+      out.className = "text-center mt-3 small fw-bold text-danger";
+      btn.disabled = false;
+    });
   }
 </script>

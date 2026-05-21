@@ -168,6 +168,7 @@
               <th scope="col" class="sortable text-center" onclick="sortBy('Mensualidad', this)" style="width: 100px;">Mens. <i class="fa-solid fa-sort ms-1 sort-icon text-muted"></i></th>
               <th scope="col" class="sortable text-center" onclick="sortBy('Tag', this)">Tag <i class="fa-solid fa-sort ms-1 sort-icon text-muted"></i></th>
               <th scope="col" class="sortable text-center" onclick="sortBy('Se Divide', this)" style="width: 110px;">Divide <i class="fa-solid fa-sort ms-1 sort-icon text-muted"></i></th>
+              <th scope="col" style="width: 80px;" class="text-center">Acción</th>
             </tr>
           </thead>
           <tbody id="unificado-tbody">
@@ -200,6 +201,111 @@
             <!-- Pagination items will be injected here -->
           </ul>
         </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content shadow border-0">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold text-dark" id="editModalLabel">
+            <i class="fa-solid fa-pen-to-square text-primary me-2"></i> Editar Registro #<span id="edit-id-label"></span>
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body py-3">
+          <form id="formEditGasto" class="px-2">
+            <!-- Hidden ID Field -->
+            <input type="hidden" id="edit-id" name="id">
+
+            <div class="mb-3">
+              <label for="edit-concepto" class="form-label">Concepto</label>
+              <input type="text" class="form-control bg-light border-0" id="edit-concepto" name="concepto" required>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="edit-monto" class="form-label">Monto</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-0">$</span>
+                  <input type="number" step="0.01" class="form-control bg-light border-0" id="edit-monto" name="monto" required>
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="edit-tipo_gasto" class="form-label">Tipo</label>
+                <select name="tipo_gasto" id="edit-tipo_gasto" class="form-select bg-light border-0" onchange="toggleEditMensualidades()">
+                  <!-- Options dynamic -->
+                </select>
+              </div>
+            </div>
+
+            <div id="edit-mensualidadesGroup" class="hidden-field bg-light rounded p-3 mb-3 border border-light">
+              <div class="row">
+                <div class="col-md-6 mb-3 mb-md-0">
+                  <label for="edit-no_mens" class="form-label">Mes Actual</label>
+                  <input type="number" class="form-control bg-white border-0" id="edit-no_mens" name="no_mens" value="0">
+                </div>
+                <div class="col-md-6">
+                  <label for="edit-total_meses" class="form-label">Total de Meses</label>
+                  <input type="number" class="form-control bg-white border-0" id="edit-total_meses" name="total_meses" value="0">
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="edit-forma_pago" class="form-label">Forma de Pago</label>
+              <select name="forma_pago" id="edit-forma_pago" class="form-select bg-light border-0">
+                <!-- Options dynamic -->
+              </select>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="edit-fecha_cargo" class="form-label">Fecha de Cargo</label>
+                <input type="date" class="form-control bg-light border-0" id="edit-fecha_cargo" name="fecha_cargo" onchange="actualizarEditAbrev()" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="edit-fecha_pago" class="form-label">Fecha de Pago (Opcional)</label>
+                <input type="date" class="form-control bg-light border-0" id="edit-fecha_pago" name="fecha_pago">
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label for="edit-categoria" class="form-label">Categoría</label>
+                <select name="categoria" id="edit-categoria" class="form-select bg-light border-0">
+                  <!-- Options dynamic -->
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="edit-tag" class="form-label">Tag</label>
+                <select name="tag" id="edit-tag" class="form-select bg-light border-0">
+                  <!-- Options dynamic -->
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="edit-se_divide" class="form-label">Se Divide</label>
+                <select name="se_divide" id="edit-se_divide" class="form-select bg-light border-0">
+                  <!-- Options dynamic -->
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="edit-gasto_x_mes" class="form-label">Abreviatura Mes</label>
+              <select name="gasto_x_mes" id="edit-gasto_x_mes" class="form-select bg-light border-0">
+                <!-- Options dynamic -->
+              </select>
+            </div>
+          </form>
+          <div id="edit-output" class="text-center mt-3 small fw-bold"></div>
+        </div>
+        <div class="modal-footer border-0 pt-0 px-4">
+          <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnEditSubmit" class="btn btn-primary rounded-pill px-4 fw-bold" onclick="submitEditForm()">Guardar Cambios</button>
+        </div>
       </div>
     </div>
   </div>

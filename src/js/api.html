@@ -2,6 +2,7 @@
   const API = {
     getOptions: (cb) => google.script.run.withSuccessHandler(cb).getFormOptions(),
     save: (data, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).registrarGasto(data),
-    getUnificadoData: (cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).getUnificadoData()
+    getUnificadoData: (cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).getUnificadoData(),
+    edit: (id, data, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).editarGasto(id, data)
   };
 </script>
