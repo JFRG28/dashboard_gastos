@@ -7,6 +7,9 @@
     getCalculos: (cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).getCalculosData(),
     updateCalculos: (tableNum, filters, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).updateCalculosTable(tableNum, filters),
     getBalance: (cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).getBalanceData(),
-    editBalance: (rowNum, data, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).editarBalance(rowNum, data)
+    editBalance: (rowNum, data, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).editarBalance(rowNum, data),
+    getWallet: (cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).getWalletData(),
+    updateWallet: (tableNum, filters, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).updateWalletFilters(tableNum, filters),
+    editWallet: (rowNum, data, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).editarWallet(rowNum, data)
   };
 </script>

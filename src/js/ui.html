@@ -102,6 +102,8 @@
       cargarCalculosDashboard();
     } else if (sectionId === 'balance') {
       cargarBalance();
+    } else if (sectionId === 'wallet') {
+      cargarWallet();
     }
   }
 
@@ -911,6 +913,285 @@
           modalEditBalanceBS.hide();
         }
         cargarBalance(); // Reload data & update KPIs
+      }, 1200);
+    }, err => {
+      out.className = "text-center mt-3 small fw-bold text-danger";
+      out.innerText = "Error: " + err;
+      btn.disabled = false;
+    });
+  }
+
+  // --- APP WALLET INTERACTIVE COMPONENT ---
+  let rawWalletData = [];
+  let filteredWalletData = [];
+  let walletPageSize = 10;
+  let currentWalletPage = 1;
+  let walletFilters = {};
+
+  function cargarWallet() {
+    const spinner = document.getElementById('wallet-loading');
+    const tableCont = document.getElementById('wallet-table-container');
+    spinner.classList.remove('d-none');
+    tableCont.classList.add('d-none');
+
+    API.getWallet((res) => {
+      rawWalletData = res.rows;
+      walletFilters = res.filters;
+
+      // Populate dropdowns if not populated yet
+      llenarSelectoresWallet();
+
+      // Set filter values to match Google Sheets state
+      document.getElementById('wallet-t1-tarjeta').value = walletFilters.t1.tarjeta;
+      document.getElementById('wallet-t1-anio').value = walletFilters.t1.anio;
+      document.getElementById('wallet-t1-mes').value = walletFilters.t1.mes;
+      document.getElementById('wallet-val-t1').innerText = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(walletFilters.t1.total);
+
+      document.getElementById('wallet-t2-anio').value = walletFilters.t2.anio;
+      document.getElementById('wallet-t2-mes').value = walletFilters.t2.mes;
+      document.getElementById('wallet-val-t2').innerText = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(walletFilters.t2.total);
+
+      // Render Table
+      filtrarWalletTable();
+
+      spinner.classList.add('d-none');
+      tableCont.classList.remove('d-none');
+    }, (err) => {
+      console.error(err);
+      alert("Error al cargar datos de wallet: " + err);
+    });
+  }
+
+  function llenarSelectoresWallet() {
+    // Unique Tarjetas from rawWalletData
+    const tarjetas = [...new Set(rawWalletData.map(r => r.tarjeta))].sort();
+    
+    // Unique Meses from rawWalletData
+    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+    // Fill T1 tarjeta selector
+    const selT1Tarjeta = document.getElementById('wallet-t1-tarjeta');
+    selT1Tarjeta.innerHTML = '';
+    tarjetas.forEach(t => selT1Tarjeta.add(new Option(t, t)));
+
+    // Fill T1 mes selector
+    const selT1Mes = document.getElementById('wallet-t1-mes');
+    selT1Mes.innerHTML = '';
+    meses.forEach(m => selT1Mes.add(new Option(m, m)));
+
+    // Fill T2 mes selector
+    const selT2Mes = document.getElementById('wallet-t2-mes');
+    selT2Mes.innerHTML = '';
+    meses.forEach(m => selT2Mes.add(new Option(m, m)));
+
+    // Fill Table mes filter
+    const selTableMes = document.getElementById('wallet-filter-mes');
+    const prevTableMes = selTableMes.value;
+    selTableMes.innerHTML = '<option value="">Cualquier mes</option>';
+    meses.forEach(m => selTableMes.add(new Option(m, m)));
+    selTableMes.value = prevTableMes;
+
+    // Fill Modal Edit selectors
+    const editTar = document.getElementById('wallet-edit-tarjeta');
+    editTar.innerHTML = '';
+    tarjetas.forEach(t => editTar.add(new Option(t, t)));
+
+    const editMes = document.getElementById('wallet-edit-mes');
+    editMes.innerHTML = '';
+    meses.forEach(m => editMes.add(new Option(m, m)));
+  }
+
+  function onWalletFilterChange(tableNum) {
+    const cardVal = document.getElementById('wallet-val-t1');
+    const monthVal = document.getElementById('wallet-val-t2');
+    
+    let filters = {};
+    if (tableNum === 1) {
+      cardVal.innerHTML = '<div class="spinner-border spinner-border-sm text-primary" role="status"></div>';
+      filters = {
+        tarjeta: document.getElementById('wallet-t1-tarjeta').value,
+        anio: document.getElementById('wallet-t1-anio').value,
+        mes: document.getElementById('wallet-t1-mes').value
+      };
+    } else if (tableNum === 2) {
+      monthVal.innerHTML = '<div class="spinner-border spinner-border-sm text-success" role="status"></div>';
+      filters = {
+        anio: document.getElementById('wallet-t2-anio').value,
+        mes: document.getElementById('wallet-t2-mes').value
+      };
+    }
+
+    API.updateWallet(tableNum, filters, (res) => {
+      walletFilters = res.filters;
+      document.getElementById('wallet-val-t1').innerText = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(walletFilters.t1.total);
+      document.getElementById('wallet-val-t2').innerText = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(walletFilters.t2.total);
+    }, (err) => {
+      console.error(err);
+      alert("Error al actualizar filtro: " + err);
+    });
+  }
+
+  function filtrarWalletTable() {
+    const searchVal = document.getElementById('wallet-search').value.toLowerCase();
+    const mesVal = document.getElementById('wallet-filter-mes').value;
+
+    filteredWalletData = rawWalletData.filter(item => {
+      const matchSearch = !searchVal || (item.tarjeta && item.tarjeta.toLowerCase().includes(searchVal));
+      const matchMes = !mesVal || item.mes === mesVal;
+      return matchSearch && matchMes;
+    });
+
+    currentWalletPage = 1;
+    document.getElementById('wallet-count-badge').innerText = `${filteredWalletData.length} registros`;
+    renderWalletTable();
+  }
+
+  function renderWalletTable() {
+    const startIdx = (currentWalletPage - 1) * walletPageSize;
+    const endIdx = startIdx + walletPageSize;
+    const pageData = filteredWalletData.slice(startIdx, endIdx);
+
+    const tbody = document.getElementById('wallet-tbody');
+    const emptyState = document.getElementById('wallet-empty-state');
+    
+    tbody.innerHTML = '';
+
+    if (filteredWalletData.length === 0) {
+      emptyState.classList.remove('d-none');
+      document.getElementById('wallet-pagination-buttons').innerHTML = '';
+      document.getElementById('wallet-pagination-info').innerText = 'Mostrando 0 registros';
+      return;
+    }
+
+    emptyState.classList.add('d-none');
+    const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+
+    pageData.forEach(item => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="fw-medium">${item.tarjeta || '-'}</td>
+        <td>${item.mes || '-'}</td>
+        <td>${item.anio || '-'}</td>
+        <td class="text-end fw-bold text-dark" style="padding-right: 40px;">${fmt.format(item.monto)}</td>
+        <td class="text-center">
+          <button class="btn btn-link text-primary p-0" onclick="abrirEditWallet(${item.rowNum})"><i class="fa-solid fa-pen"></i></button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    renderWalletPagination();
+  }
+
+  function renderWalletPagination() {
+    const totalPages = Math.ceil(filteredWalletData.length / walletPageSize);
+    const startRecord = (currentWalletPage - 1) * walletPageSize + 1;
+    const endRecord = Math.min(currentWalletPage * walletPageSize, filteredWalletData.length);
+    
+    document.getElementById('wallet-pagination-info').innerText = `Mostrando ${startRecord} a ${endRecord} de ${filteredWalletData.length} registros`;
+
+    const paginationContainer = document.getElementById('wallet-pagination-buttons');
+    paginationContainer.innerHTML = '';
+
+    const addPageItem = (page, label, active = false, disabled = false) => {
+      const li = document.createElement('li');
+      li.className = `page-item ${active ? 'active' : ''} ${disabled ? 'disabled' : ''}`;
+      
+      const a = document.createElement('a');
+      a.className = 'page-link border-0 mx-1 rounded-circle text-center';
+      a.style.width = '32px';
+      a.style.height = '32px';
+      a.style.lineHeight = '32px';
+      a.style.padding = '0';
+      a.href = '#';
+      a.innerHTML = label;
+      a.onclick = (e) => {
+        e.preventDefault();
+        if (!disabled && !active) {
+          currentWalletPage = page;
+          renderWalletTable();
+        }
+      };
+      
+      li.appendChild(a);
+      paginationContainer.appendChild(li);
+    };
+
+    addPageItem(1, '<i class="fa-solid fa-angles-left"></i>', false, currentWalletPage === 1);
+    addPageItem(currentWalletPage - 1, '<i class="fa-solid fa-angle-left"></i>', false, currentWalletPage === 1);
+
+    let startPage = Math.max(1, currentWalletPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    if (endPage - startPage < 4) {
+      startPage = Math.max(1, endPage - 4);
+    }
+
+    for (let p = startPage; p <= endPage; p++) {
+      addPageItem(p, p, p === currentWalletPage);
+    }
+
+    addPageItem(currentWalletPage + 1, '<i class="fa-solid fa-angle-right"></i>', false, currentWalletPage === totalPages);
+    addPageItem(totalPages, '<i class="fa-solid fa-angles-right"></i>', false, currentWalletPage === totalPages);
+  }
+
+  function changeWalletPageSize(size) {
+    walletPageSize = parseInt(size);
+    currentWalletPage = 1;
+    renderWalletTable();
+  }
+
+  let modalEditWalletBS = null;
+
+  function abrirEditWallet(rowNum) {
+    const item = rawWalletData.find(r => r.rowNum === rowNum);
+    if (!item) return;
+
+    document.getElementById('wallet-edit-rowNum').value = item.rowNum;
+    document.getElementById('wallet-edit-tarjeta').value = item.tarjeta;
+    document.getElementById('wallet-edit-mes').value = item.mes;
+    document.getElementById('wallet-edit-anio').value = item.anio;
+    document.getElementById('wallet-edit-monto').value = item.monto;
+
+    // Clear output status
+    const out = document.getElementById('wallet-edit-output');
+    out.className = 'd-none';
+    out.innerText = '';
+    
+    document.getElementById('btn-save-wallet').disabled = false;
+
+    if (!modalEditWalletBS) {
+      modalEditWalletBS = new bootstrap.Modal(document.getElementById('modalEditWallet'));
+    }
+    modalEditWalletBS.show();
+  }
+
+  function submitEditWallet(e) {
+    e.preventDefault();
+    
+    const rowNum = parseInt(document.getElementById('wallet-edit-rowNum').value);
+    const btn = document.getElementById('btn-save-wallet');
+    const out = document.getElementById('wallet-edit-output');
+    
+    btn.disabled = true;
+    out.className = "text-center mt-3 small fw-bold text-primary";
+    out.innerHTML = '<div class="spinner-border spinner-border-sm me-2" role="status"></div>Guardando cambios...';
+    
+    const payload = {
+      tarjeta: document.getElementById('wallet-edit-tarjeta').value,
+      mes: document.getElementById('wallet-edit-mes').value,
+      anio: parseInt(document.getElementById('wallet-edit-anio').value) || 2026,
+      monto: parseFloat(document.getElementById('wallet-edit-monto').value) || 0
+    };
+
+    API.editWallet(rowNum, payload, res => {
+      out.className = "text-center mt-3 small fw-bold text-success";
+      out.innerText = res;
+      
+      setTimeout(() => {
+        if (modalEditWalletBS) {
+          modalEditWalletBS.hide();
+        }
+        cargarWallet(); // Reload data & update filters
       }, 1200);
     }, err => {
       out.className = "text-center mt-3 small fw-bold text-danger";

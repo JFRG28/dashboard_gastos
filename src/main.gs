@@ -228,3 +228,79 @@ function editarBalance(rowNum, data) {
   SpreadsheetApp.flush();
   return "Registro de Balance actualizado correctamente.";
 }
+
+function getWalletData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('app wallet');
+  if (!sheet) return null;
+
+  // Read current filters
+  const t1Tarjeta = sheet.getRange("H2").getValue();
+  const t1AnioVal = sheet.getRange("J2").getValue();
+  const t1Anio = (typeof t1AnioVal === 'number') ? Math.round(t1AnioVal) : t1AnioVal;
+  const t1Mes = sheet.getRange("H3").getValue();
+  const t1Total = sheet.getRange("K3").getValue();
+
+  const t2Mes = sheet.getRange("N2").getValue();
+  const t2AnioVal = sheet.getRange("P2").getValue();
+  const t2Anio = (typeof t2AnioVal === 'number') ? Math.round(t2AnioVal) : t2AnioVal;
+  const t2Total = sheet.getRange("Q3").getValue();
+
+  // Read data rows starting at row 5 (header at row 4)
+  const lastRow = sheet.getLastRow();
+  const rows = [];
+  if (lastRow >= 5) {
+    const data = sheet.getRange(5, 2, lastRow - 4, 4).getValues(); // Columns B to E (monto, tarjeta, mes, año)
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      if (!row[1]) continue; // If 'tarjeta' is empty, skip
+      rows.push({
+        rowNum: i + 5,
+        monto: Number(row[0]) || 0,
+        tarjeta: row[1],
+        mes: row[2],
+        anio: (typeof row[3] === 'number') ? Math.round(row[3]) : row[3]
+      });
+    }
+  }
+
+  return {
+    filters: {
+      t1: { tarjeta: t1Tarjeta, anio: t1Anio, mes: t1Mes, total: Number(t1Total) || 0 },
+      t2: { mes: t2Mes, anio: t2Anio, total: Number(t2Total) || 0 }
+    },
+    rows: rows
+  };
+}
+
+function updateWalletFilters(tableNum, filters) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('app wallet');
+  if (!sheet) throw new Error("La hoja 'app wallet' no existe.");
+
+  if (tableNum === 1) {
+    if (filters.tarjeta !== undefined) sheet.getRange("H2").setValue(filters.tarjeta);
+    if (filters.anio !== undefined) sheet.getRange("J2").setValue(Number(filters.anio) || filters.anio);
+    if (filters.mes !== undefined) sheet.getRange("H3").setValue(filters.mes);
+  } else if (tableNum === 2) {
+    if (filters.mes !== undefined) sheet.getRange("N2").setValue(filters.mes);
+    if (filters.anio !== undefined) sheet.getRange("P2").setValue(Number(filters.anio) || filters.anio);
+  }
+
+  SpreadsheetApp.flush(); // Recalculate
+  return getWalletData();
+}
+
+function editarWallet(rowNum, data) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('app wallet');
+  if (!sheet) throw new Error("La hoja 'app wallet' no existe.");
+
+  sheet.getRange(rowNum, 2).setValue(Number(data.monto) || 0);
+  sheet.getRange(rowNum, 3).setValue(data.tarjeta);
+  sheet.getRange(rowNum, 4).setValue(data.mes);
+  sheet.getRange(rowNum, 5).setValue(Number(data.anio) || data.anio);
+
+  SpreadsheetApp.flush();
+  return "Registro de App wallet actualizado correctamente.";
+}

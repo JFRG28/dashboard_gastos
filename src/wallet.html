@@ -1,0 +1,183 @@
+<div class="row g-4 mb-4">
+  <!-- Card 1: Total TDC Calculator -->
+  <div class="col-12 col-md-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white border-0 py-3 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between">
+        <h5 class="mb-2 mb-sm-0 text-dark fw-bold"><i class="fa-solid fa-credit-card text-primary me-2"></i> Total TDC</h5>
+        <div class="d-flex flex-wrap gap-2">
+          <!-- Tarjeta filter -->
+          <select id="wallet-t1-tarjeta" class="form-select form-select-sm bg-light border-0" style="min-width: 120px;" onchange="onWalletFilterChange(1)">
+            <!-- Dynamic options -->
+          </select>
+          <!-- Year filter -->
+          <select id="wallet-t1-anio" class="form-select form-select-sm bg-light border-0" onchange="onWalletFilterChange(1)">
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+            <option value="2026" selected>2026</option>
+            <option value="2027">2027</option>
+          </select>
+          <!-- Month filter -->
+          <select id="wallet-t1-mes" class="form-select form-select-sm bg-light border-0" onchange="onWalletFilterChange(1)">
+            <!-- Dynamic options -->
+          </select>
+        </div>
+      </div>
+      <div class="card-body d-flex flex-column align-items-center justify-content-center py-4">
+        <div class="text-secondary small fw-medium text-uppercase">Gasto de Tarjeta</div>
+        <div id="wallet-val-t1" class="fs-1 fw-bold text-primary mt-1">$0.00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 2: Total Mes Calculator -->
+  <div class="col-12 col-md-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white border-0 py-3 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between">
+        <h5 class="mb-2 mb-sm-0 text-dark fw-bold"><i class="fa-solid fa-calendar-days text-primary me-2"></i> Total Mes</h5>
+        <div class="d-flex gap-2">
+          <!-- Year filter -->
+          <select id="wallet-t2-anio" class="form-select form-select-sm bg-light border-0" onchange="onWalletFilterChange(2)">
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+            <option value="2026" selected>2026</option>
+            <option value="2027">2027</option>
+          </select>
+          <!-- Month filter -->
+          <select id="wallet-t2-mes" class="form-select form-select-sm bg-light border-0" onchange="onWalletFilterChange(2)">
+            <!-- Dynamic options -->
+          </select>
+        </div>
+      </div>
+      <div class="card-body d-flex flex-column align-items-center justify-content-center py-4">
+        <div class="text-secondary small fw-medium text-uppercase">Gasto Mensual Total</div>
+        <div id="wallet-val-t2" class="fs-1 fw-bold text-success mt-1">$0.00</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Table and Search Card -->
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white border-0 py-3 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+    <div class="d-flex align-items-center gap-2">
+      <h5 class="m-0 text-dark fw-bold"><i class="fa-solid fa-wallet text-primary me-2"></i> Registros de Wallet</h5>
+      <span class="badge bg-light text-secondary rounded-pill fw-medium" id="wallet-count-badge">0 registros</span>
+    </div>
+    
+    <!-- Table filters -->
+    <div class="d-flex gap-2 w-100 w-sm-auto">
+      <input type="text" id="wallet-search" class="form-control form-control-sm bg-light border-0" placeholder="Buscar tarjeta..." oninput="filtrarWalletTable()" style="max-width: 200px;">
+      <select id="wallet-filter-mes" class="form-select form-select-sm bg-light border-0" onchange="filtrarWalletTable()" style="max-width: 120px;">
+        <option value="">Cualquier mes</option>
+        <!-- Options dynamic -->
+      </select>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div id="wallet-loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="text-muted mt-2 mb-0">Cargando datos de wallet...</p>
+    </div>
+    
+    <div id="wallet-table-container" class="d-none">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 text-center">
+          <thead class="table-light">
+            <tr>
+              <th class="text-secondary small fw-bold">Tarjeta</th>
+              <th class="text-secondary small fw-bold">Mes</th>
+              <th class="text-secondary small fw-bold">Año</th>
+              <th class="text-end text-secondary small fw-bold" style="padding-right: 40px;">Monto</th>
+              <th class="text-center text-secondary small fw-bold" style="width: 80px;">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="wallet-tbody">
+            <!-- Rows dynamic -->
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Empty state -->
+      <div id="wallet-empty-state" class="text-center py-5 d-none">
+        <i class="fa-regular fa-folder-open fa-3x text-muted mb-3"></i>
+        <h6 class="fw-bold text-dark">No se encontraron registros</h6>
+        <p class="text-secondary small mb-0">Ajusta los filtros de búsqueda.</p>
+      </div>
+
+      <!-- Pagination footer -->
+      <div class="d-flex flex-column flex-md-row align-items-center justify-content-between p-3 border-top gap-3">
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-secondary small">Mostrar</span>
+          <select class="form-select form-select-sm bg-light border-0" style="width: 80px;" onchange="changeWalletPageSize(this.value)">
+            <option value="10" selected>10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
+          <span class="text-secondary small" id="wallet-pagination-info">Mostrando 0 a 0 de 0 registros</span>
+        </div>
+        <nav>
+          <ul class="pagination pagination-sm m-0" id="wallet-pagination-buttons">
+            <!-- Buttons dynamic -->
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Wallet Modal -->
+<div class="modal fade" id="modalEditWallet" tabindex="-1" aria-labelledby="modalEditWalletLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+      <div class="modal-header bg-primary text-white border-0 py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <h5 class="modal-title fw-bold" id="modalEditWalletLabel"><i class="fa-solid fa-pen-to-square me-2"></i>Editar Registro Wallet</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="form-edit-wallet" onsubmit="submitEditWallet(event)">
+        <input type="hidden" id="wallet-edit-rowNum">
+        <div class="modal-body p-4">
+          <div class="row g-3">
+            <!-- Tarjeta -->
+            <div class="col-12">
+              <label for="wallet-edit-tarjeta" class="form-label">Tarjeta</label>
+              <select id="wallet-edit-tarjeta" class="form-select bg-light border-0" required>
+                <!-- Tarjetas dynamic -->
+              </select>
+            </div>
+            <!-- Mes -->
+            <div class="col-6">
+              <label for="wallet-edit-mes" class="form-label">Mes</label>
+              <select id="wallet-edit-mes" class="form-select bg-light border-0" required>
+                <!-- Meses dynamic -->
+              </select>
+            </div>
+            <!-- Año -->
+            <div class="col-6">
+              <label for="wallet-edit-anio" class="form-label">Año</label>
+              <select id="wallet-edit-anio" class="form-select bg-light border-0" required>
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+              </select>
+            </div>
+            <!-- Monto -->
+            <div class="col-12">
+              <label for="wallet-edit-monto" class="form-label">Monto</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-0">$</span>
+                <input type="number" id="wallet-edit-monto" class="form-control bg-light border-0" step="0.01" required>
+              </div>
+            </div>
+          </div>
+          <!-- Status message inside modal -->
+          <div id="wallet-edit-output" class="text-center mt-3 d-none"></div>
+        </div>
+        <div class="modal-footer bg-light border-0 py-3" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+          <button type="button" class="btn btn-outline-secondary px-4 border-0" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" id="btn-save-wallet" class="btn btn-primary px-4 fw-bold"><i class="fa-solid fa-floppy-disk me-2"></i>Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
