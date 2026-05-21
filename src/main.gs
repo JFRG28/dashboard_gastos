@@ -32,8 +32,18 @@ function registrarGasto(form) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('unificado_v4');
   const lastRow = sheet.getLastRow();
-  const lastId = lastRow > 1 ? sheet.getRange(lastRow, 1).getValue() : 0;
-  const nextId = (parseInt(lastId) || 0) + 1;
+  
+  let maxId = 0;
+  if (lastRow > 1) {
+    const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+    for (let i = 0; i < ids.length; i++) {
+      const val = parseInt(ids[i][0]);
+      if (!isNaN(val) && val > maxId) {
+        maxId = val;
+      }
+    }
+  }
+  const nextId = maxId + 1;
 
   const fechaCargo = form.fecha_cargo ? new Date(form.fecha_cargo + "T00:00:00") : null;
   const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
@@ -148,6 +158,7 @@ function eliminarGasto(id) {
   
   const data = sheet.getDataRange().getValues();
   let targetRowIndex = -1;
+  let deletedId = parseInt(id);
   
   // Find row matching ID in column 1 (0-indexed 0)
   for (let i = 1; i < data.length; i++) {
@@ -155,9 +166,14 @@ function eliminarGasto(id) {
     const targetIdNum = parseInt(id);
     if (!isNaN(rowIdNum) && !isNaN(targetIdNum) && rowIdNum === targetIdNum) {
       targetRowIndex = i + 1; // Google Sheets row numbers are 1-based
+      deletedId = targetIdNum;
       break;
     } else if (String(data[i][0]).trim() === String(id).trim()) {
       targetRowIndex = i + 1;
+      const parsed = parseInt(data[i][0]);
+      if (!isNaN(parsed)) {
+        deletedId = parsed;
+      }
       break;
     }
   }
@@ -169,18 +185,16 @@ function eliminarGasto(id) {
   // Delete the row
   sheet.deleteRow(targetRowIndex);
   
-  // If we deleted a row that was not the last row, we need to shift/re-sequence subsequent IDs.
+  // Re-sequence IDs: decrement by 1 any ID value that is greater than the deleted ID
   const lastRow = sheet.getLastRow();
-  if (targetRowIndex <= lastRow) {
-    const numRowsToUpdate = lastRow - targetRowIndex + 1;
-    // Read the ID column (column 1) for the remaining rows that shifted up
-    const idRange = sheet.getRange(targetRowIndex, 1, numRowsToUpdate, 1);
+  if (lastRow > 1) {
+    const numRowsToUpdate = lastRow - 1; // Row 2 to lastRow
+    const idRange = sheet.getRange(2, 1, numRowsToUpdate, 1);
     const ids = idRange.getValues();
     
-    // Decrement each ID by 1 to maintain sequence
     for (let i = 0; i < ids.length; i++) {
       const currentId = parseInt(ids[i][0]);
-      if (!isNaN(currentId)) {
+      if (!isNaN(currentId) && currentId > deletedId) {
         ids[i][0] = currentId - 1;
       }
     }
