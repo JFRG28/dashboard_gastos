@@ -40,7 +40,7 @@ function registrarGasto(form) {
   
   const nuevaFila = [
     nextId, form.concepto, parseFloat(form.monto), form.tipo_gasto, form.forma_pago,
-    meses[fechaCargo.getMonth()], fechaCargo.getFullYear(), form.fecha_cargo,
+    form.mes || meses[fechaCargo.getMonth()], fechaCargo.getFullYear(), form.fecha_cargo,
     form.fecha_pago || form.fecha_cargo, form.categoria, parseInt(form.no_mens) || 0,
     parseInt(form.total_meses) || 0, form.tag, form.se_divide, form.gasto_x_mes
   ];
@@ -98,7 +98,7 @@ function editarGasto(id, form) {
   
   const filaActualizada = [
     parseInt(id), form.concepto, parseFloat(form.monto), form.tipo_gasto, form.forma_pago,
-    meses[fechaCargo.getMonth()], fechaCargo.getFullYear(), form.fecha_cargo,
+    form.mes || meses[fechaCargo.getMonth()], fechaCargo.getFullYear(), form.fecha_cargo,
     form.fecha_pago || form.fecha_cargo, form.categoria, parseInt(form.no_mens) || 0,
     parseInt(form.total_meses) || 0, form.tag, form.se_divide, form.gasto_x_mes
   ];
