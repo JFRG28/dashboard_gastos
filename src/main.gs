@@ -262,7 +262,7 @@ function eliminarGastos(ids) {
   return "Se eliminaron " + rowIndicesToDelete.length + " registros correctamente.";
 }
 
-function duplicarGastos(ids) {
+function duplicarGastos(ids, customFields) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('unificado_v4');
   if (!sheet) throw new Error("La hoja 'unificado_v4' no existe.");
@@ -305,6 +305,13 @@ function duplicarGastos(ids) {
     // Assign new ID
     maxId++;
     newRow[0] = maxId;
+    
+    // Overwrite mes, anio and gasto_x_mes if customFields are provided
+    if (customFields) {
+      newRow[5] = customFields.mes || "";
+      newRow[6] = customFields.anio || "";
+      newRow[14] = customFields.gastoXMes || "";
+    }
     
     // Set Fecha Cargo and Fecha Pago to blank
     newRow[7] = "";

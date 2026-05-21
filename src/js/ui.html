@@ -32,6 +32,14 @@
         map[id].forEach(o => editEl.add(new Option(o, o)));
       }
     }
+    
+    // Also fill the bulk duplicate selector if it exists
+    const bulkDupGastoXMes = document.getElementById('bulk-dup-gasto_x_mes');
+    if (bulkDupGastoXMes && opts.abrevs) {
+      bulkDupGastoXMes.innerHTML = '';
+      opts.abrevs.forEach(o => bulkDupGastoXMes.add(new Option(o, o)));
+    }
+
     actualizarAbrev();
     if (typeof actualizarEditAbrev === 'function') {
       actualizarEditAbrev();
@@ -1515,28 +1523,71 @@
     }
   }
 
+  let modalBulkDuplicateBS = null;
+
   function bulkDuplicar() {
     if (selectedIds.length === 0) return;
     
-    const bar = document.getElementById('bulk-actions-bar');
-    const originalContent = bar.innerHTML;
-    bar.innerHTML = `
-      <div class="d-flex align-items-center justify-content-center w-100 py-1">
-        <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
-        <span class="text-primary fw-bold">Duplicando registros seleccionados...</span>
-      </div>
-    `;
+    // Set default values based on current date
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const mesesFull = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+    const mesesAbrev = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
     
-    API.duplicateGastos(selectedIds, res => {
-      alert(res);
-      bar.innerHTML = originalContent;
-      resetSelection();
-      isDataLoaded = false;
-      cargarDatosUnificado();
+    document.getElementById('bulk-dup-count-label').innerText = selectedIds.length;
+    document.getElementById('bulk-dup-anio').value = currentYear;
+    document.getElementById('bulk-dup-mes').value = mesesFull[now.getMonth()];
+    
+    const abrevEl = document.getElementById('bulk-dup-gasto_x_mes');
+    if (abrevEl) {
+      abrevEl.value = mesesAbrev[now.getMonth()];
+    }
+
+    // Reset output status
+    const out = document.getElementById('bulk-dup-output');
+    out.innerText = '';
+    out.className = '';
+    document.getElementById('btnBulkDupSubmit').disabled = false;
+
+    // Show modal using Bootstrap JS API
+    if (!modalBulkDuplicateBS) {
+      modalBulkDuplicateBS = new bootstrap.Modal(document.getElementById('bulkDuplicateModal'));
+    }
+    modalBulkDuplicateBS.show();
+  }
+
+  function submitBulkDuplicate() {
+    const form = document.getElementById('formBulkDuplicate');
+    const out = document.getElementById('bulk-dup-output');
+    const btn = document.getElementById('btnBulkDupSubmit');
+    if (!form.checkValidity()) return form.reportValidity();
+    
+    const mes = document.getElementById('bulk-dup-mes').value;
+    const anio = parseInt(document.getElementById('bulk-dup-anio').value);
+    const gastoXMes = document.getElementById('bulk-dup-gasto_x_mes').value;
+
+    btn.disabled = true;
+    out.innerText = "Duplicando registros...";
+    out.className = "text-center mt-3 small fw-bold text-muted";
+
+    // Call API with custom modified fields
+    API.duplicateGastos(selectedIds, { mes, anio, gastoXMes }, res => {
+      out.innerText = res;
+      out.className = "text-center mt-3 small fw-bold text-success";
+      
+      // Delay closing modal and reloading
+      setTimeout(() => {
+        if (modalBulkDuplicateBS) {
+          modalBulkDuplicateBS.hide();
+        }
+        resetSelection();
+        isDataLoaded = false;
+        cargarDatosUnificado();
+      }, 1200);
     }, err => {
-      alert("Error al duplicar: " + err);
-      bar.innerHTML = originalContent;
-      updateBulkActionsBar();
+      out.innerText = "Error: " + err;
+      out.className = "text-center mt-3 small fw-bold text-danger";
+      btn.disabled = false;
     });
   }
 </script>

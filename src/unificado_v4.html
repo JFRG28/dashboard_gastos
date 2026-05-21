@@ -343,4 +343,56 @@
       </div>
     </div>
   </div>
+
+  <!-- Bulk Duplicate Modal -->
+  <div class="modal fade" id="bulkDuplicateModal" tabindex="-1" aria-labelledby="bulkDuplicateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content shadow border-0">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold text-dark" id="bulkDuplicateModalLabel">
+            <i class="fa-solid fa-copy text-primary me-2"></i> Duplicar <span id="bulk-dup-count-label"></span> Registros
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body py-3">
+          <form id="formBulkDuplicate" class="px-2">
+            <div class="mb-3">
+              <label for="bulk-dup-mes" class="form-label text-secondary small">Mes</label>
+              <select name="mes" id="bulk-dup-mes" class="form-select bg-light border-0">
+                <option value="Enero">Enero</option>
+                <option value="Febrero">Febrero</option>
+                <option value="Marzo">Marzo</option>
+                <option value="Abril">Abril</option>
+                <option value="Mayo">Mayo</option>
+                <option value="Junio">Junio</option>
+                <option value="Julio">Julio</option>
+                <option value="Agosto">Agosto</option>
+                <option value="Septiembre">Septiembre</option>
+                <option value="Octubre">Octubre</option>
+                <option value="Noviembre">Noviembre</option>
+                <option value="Diciembre">Diciembre</option>
+              </select>
+            </div>
+            
+            <div class="mb-3">
+              <label for="bulk-dup-anio" class="form-label text-secondary small">Año</label>
+              <input type="number" class="form-control bg-light border-0" id="bulk-dup-anio" name="anio" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="bulk-dup-gasto_x_mes" class="form-label text-secondary small">Gasto x mes</label>
+              <select name="gasto_x_mes" id="bulk-dup-gasto_x_mes" class="form-select bg-light border-0">
+                <!-- Options dynamic -->
+              </select>
+            </div>
+          </form>
+          <div id="bulk-dup-output" class="text-center mt-3 small fw-bold"></div>
+        </div>
+        <div class="modal-footer border-0 pt-0 px-4">
+          <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnBulkDupSubmit" class="btn btn-primary rounded-pill px-4 fw-bold" onclick="submitBulkDuplicate()">Duplicar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
