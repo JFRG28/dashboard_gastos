@@ -35,14 +35,28 @@ function registrarGasto(form) {
   const lastId = lastRow > 1 ? sheet.getRange(lastRow, 1).getValue() : 0;
   const nextId = (parseInt(lastId) || 0) + 1;
 
-  const fechaCargo = new Date(form.fecha_cargo + "T00:00:00");
+  const fechaCargo = form.fecha_cargo ? new Date(form.fecha_cargo + "T00:00:00") : null;
   const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
   
+  const mesCalculado = (fechaCargo && !isNaN(fechaCargo.getTime())) ? meses[fechaCargo.getMonth()] : "";
+  const anioCalculado = (fechaCargo && !isNaN(fechaCargo.getTime())) ? fechaCargo.getFullYear() : "";
+
   const nuevaFila = [
-    nextId, form.concepto, parseFloat(form.monto), form.tipo_gasto, form.forma_pago,
-    form.mes || meses[fechaCargo.getMonth()], fechaCargo.getFullYear(), form.fecha_cargo,
-    form.fecha_pago || form.fecha_cargo, form.categoria, parseInt(form.no_mens) || 0,
-    parseInt(form.total_meses) || 0, form.tag, form.se_divide, form.gasto_x_mes
+    nextId, 
+    form.concepto, 
+    parseFloat(form.monto), 
+    form.tipo_gasto, 
+    form.forma_pago,
+    form.mes || mesCalculado, 
+    anioCalculado, 
+    form.fecha_cargo || "",
+    form.fecha_pago || "", 
+    form.categoria, 
+    parseInt(form.no_mens) || 0,
+    parseInt(form.total_meses) || 0, 
+    form.tag, 
+    form.se_divide, 
+    form.gasto_x_mes || ""
   ];
 
   sheet.appendRow(nuevaFila);
@@ -93,14 +107,28 @@ function editarGasto(id, form) {
     throw new Error("Registro con ID #" + id + " no encontrado.");
   }
   
-  const fechaCargo = new Date(form.fecha_cargo + "T00:00:00");
+  const fechaCargo = form.fecha_cargo ? new Date(form.fecha_cargo + "T00:00:00") : null;
   const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
   
+  const mesCalculado = (fechaCargo && !isNaN(fechaCargo.getTime())) ? meses[fechaCargo.getMonth()] : "";
+  const anioCalculado = (fechaCargo && !isNaN(fechaCargo.getTime())) ? fechaCargo.getFullYear() : "";
+
   const filaActualizada = [
-    parseInt(id), form.concepto, parseFloat(form.monto), form.tipo_gasto, form.forma_pago,
-    form.mes || meses[fechaCargo.getMonth()], fechaCargo.getFullYear(), form.fecha_cargo,
-    form.fecha_pago || form.fecha_cargo, form.categoria, parseInt(form.no_mens) || 0,
-    parseInt(form.total_meses) || 0, form.tag, form.se_divide, form.gasto_x_mes
+    parseInt(id), 
+    form.concepto, 
+    parseFloat(form.monto), 
+    form.tipo_gasto, 
+    form.forma_pago,
+    form.mes || mesCalculado, 
+    anioCalculado, 
+    form.fecha_cargo || "",
+    form.fecha_pago || "", 
+    form.categoria, 
+    parseInt(form.no_mens) || 0,
+    parseInt(form.total_meses) || 0, 
+    form.tag, 
+    form.se_divide, 
+    form.gasto_x_mes || ""
   ];
   
   // Update the entire row in the sheet

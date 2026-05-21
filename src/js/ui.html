@@ -230,8 +230,19 @@
         selectEl.add(new Option(val, val));
       });
 
-      if (uniqueVals.includes(currVal)) {
+      if (currVal && uniqueVals.map(String).includes(String(currVal))) {
         selectEl.value = currVal;
+      } else if (selectId === 'filter-anio') {
+        const currentYear = String(new Date().getFullYear());
+        if (uniqueVals.map(String).includes(currentYear)) {
+          selectEl.value = currentYear;
+        }
+      } else if (selectId === 'filter-mes') {
+        const mesesFull = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+        const currentMonth = mesesFull[new Date().getMonth()];
+        if (uniqueVals.map(String).includes(currentMonth)) {
+          selectEl.value = currentMonth;
+        }
       }
     }
   }
@@ -277,14 +288,31 @@
 
   /* Reset Filter Fields */
   function resetFilters() {
+    const now = new Date();
+    const currentYear = String(now.getFullYear());
+    const mesesFull = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+    const currentMonth = mesesFull[now.getMonth()];
+
     document.getElementById('filter-concepto').value = '';
     document.getElementById('filter-categoria').value = '';
     document.getElementById('filter-tipo').value = '';
     document.getElementById('filter-forma-pago').value = '';
     document.getElementById('filter-tag').value = '';
     document.getElementById('filter-se-divide').value = '';
-    document.getElementById('filter-anio').value = '';
-    document.getElementById('filter-mes').value = '';
+    
+    // Default to current year and month if they exist in options
+    const filterAnio = document.getElementById('filter-anio');
+    if (filterAnio) {
+      const exists = Array.from(filterAnio.options).some(opt => opt.value === currentYear);
+      filterAnio.value = exists ? currentYear : '';
+    }
+    
+    const filterMes = document.getElementById('filter-mes');
+    if (filterMes) {
+      const exists = Array.from(filterMes.options).some(opt => opt.value === currentMonth);
+      filterMes.value = exists ? currentMonth : '';
+    }
+
     document.getElementById('filter-gasto-x-mes').value = '';
     document.getElementById('filter-fecha-desde').value = '';
     document.getElementById('filter-fecha-hasta').value = '';
