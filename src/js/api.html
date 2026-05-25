@@ -7,6 +7,7 @@
     deleteGasto: (id, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).eliminarGasto(id),
     deleteGastos: (ids, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).eliminarGastos(ids),
     duplicateGastos: (ids, customFields, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).duplicarGastos(ids, customFields),
+    editGastos: (ids, customFields, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).editarGastos(ids, customFields),
     getCalculos: (cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).getCalculosData(),
     updateCalculos: (tableNum, filters, cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).updateCalculosTable(tableNum, filters),
     getBalance: (cb, err) => google.script.run.withSuccessHandler(cb).withFailureHandler(err).getBalanceData(),

@@ -163,6 +163,9 @@
           <button class="btn btn-outline-primary btn-sm rounded-pill me-2 px-3 fw-bold" onclick="bulkDuplicar()">
             <i class="fa-solid fa-copy me-1"></i> Duplicar
           </button>
+          <button class="btn btn-outline-warning btn-sm rounded-pill me-2 px-3 fw-bold text-dark" onclick="bulkEditar()">
+            <i class="fa-solid fa-pen me-1"></i> Editar
+          </button>
           <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold" onclick="bulkEliminar()">
             <i class="fa-solid fa-trash me-1"></i> Eliminar
           </button>
@@ -391,6 +394,246 @@
         <div class="modal-footer border-0 pt-0 px-4">
           <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
           <button type="button" id="btnBulkDupSubmit" class="btn btn-primary rounded-pill px-4 fw-bold" onclick="submitBulkDuplicate()">Duplicar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk Edit Modal -->
+  <div class="modal fade" id="bulkEditModal" tabindex="-1" aria-labelledby="bulkEditModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content shadow border-0">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold text-dark" id="bulkEditModalLabel">
+            <i class="fa-solid fa-pen-to-square text-primary me-2"></i> Editar <span id="bulk-edit-count-label"></span> Registros
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body py-3">
+          <p class="text-muted small px-2">Activa la casilla junto a cada campo para aplicar ese cambio a todos los registros seleccionados.</p>
+          <form id="formBulkEdit" class="px-2">
+            
+            <!-- Concepto -->
+            <div class="row align-items-center mb-3">
+              <div class="col-auto">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="bulk-edit-use-concepto" onchange="toggleBulkEditField('concepto')">
+                </div>
+              </div>
+              <div class="col">
+                <label for="bulk-edit-concepto" class="form-label mb-1 text-secondary small">Concepto</label>
+                <input type="text" class="form-control bg-light border-0" id="bulk-edit-concepto" name="concepto" disabled required>
+              </div>
+            </div>
+
+            <!-- Monto & Tipo -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <div class="row align-items-center">
+                  <div class="col-auto">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="bulk-edit-use-monto" onchange="toggleBulkEditField('monto')">
+                    </div>
+                  </div>
+                  <div class="col">
+                    <label for="bulk-edit-monto" class="form-label mb-1 text-secondary small">Monto</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light border-0">$</span>
+                      <input type="number" step="0.01" class="form-control bg-light border-0" id="bulk-edit-monto" name="monto" disabled required>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6 mt-3 mt-md-0">
+                <div class="row align-items-center">
+                  <div class="col-auto">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="bulk-edit-use-tipo_gasto" onchange="toggleBulkEditField('tipo_gasto')">
+                    </div>
+                  </div>
+                  <div class="col">
+                    <label for="bulk-edit-tipo_gasto" class="form-label mb-1 text-secondary small">Tipo</label>
+                    <select name="tipo_gasto" id="bulk-edit-tipo_gasto" class="form-select bg-light border-0" onchange="toggleBulkEditMensualidades()" disabled>
+                      <!-- Options dynamic -->
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mensualidades -->
+            <div id="bulk-edit-mensualidadesGroup" class="hidden-field bg-light rounded p-3 mb-3 border border-light">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="row align-items-center">
+                    <div class="col-auto">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="bulk-edit-use-no_mens" onchange="toggleBulkEditField('no_mens')">
+                      </div>
+                    </div>
+                    <div class="col">
+                      <label for="bulk-edit-no_mens" class="form-label mb-1 text-secondary small">Mes Actual</label>
+                      <input type="number" class="form-control bg-white border-0" id="bulk-edit-no_mens" name="no_mens" value="0" disabled>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 mt-3 mt-md-0">
+                  <div class="row align-items-center">
+                    <div class="col-auto">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="bulk-edit-use-total_meses" onchange="toggleBulkEditField('total_meses')">
+                      </div>
+                    </div>
+                    <div class="col">
+                      <label for="bulk-edit-total_meses" class="form-label mb-1 text-secondary small">Total de Meses</label>
+                      <input type="number" class="form-control bg-white border-0" id="bulk-edit-total_meses" name="total_meses" value="0" disabled>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Forma de pago -->
+            <div class="row align-items-center mb-3">
+              <div class="col-auto">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="bulk-edit-use-forma_pago" onchange="toggleBulkEditField('forma_pago')">
+                </div>
+              </div>
+              <div class="col">
+                <label for="bulk-edit-forma_pago" class="form-label mb-1 text-secondary small">Forma de Pago</label>
+                <select name="forma_pago" id="bulk-edit-forma_pago" class="form-select bg-light border-0" disabled>
+                  <!-- Options dynamic -->
+                </select>
+              </div>
+            </div>
+
+            <!-- Fechas y Mes -->
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <div class="row align-items-center">
+                  <div class="col-auto">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="bulk-edit-use-fecha_cargo" onchange="toggleBulkEditField('fecha_cargo')">
+                    </div>
+                  </div>
+                  <div class="col">
+                    <label for="bulk-edit-fecha_cargo" class="form-label mb-1 text-secondary small">Fecha de Cargo</label>
+                    <input type="date" class="form-control bg-light border-0" id="bulk-edit-fecha_cargo" name="fecha_cargo" onchange="actualizarBulkEditAbrev()" disabled>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 mt-3 mt-md-0">
+                <div class="row align-items-center">
+                  <div class="col-auto">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="bulk-edit-use-fecha_pago" onchange="toggleBulkEditField('fecha_pago')">
+                    </div>
+                  </div>
+                  <div class="col">
+                    <label for="bulk-edit-fecha_pago" class="form-label mb-1 text-secondary small">Fecha de Pago</label>
+                    <input type="date" class="form-control bg-light border-0" id="bulk-edit-fecha_pago" name="fecha_pago" disabled>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 mt-3 mt-md-0">
+                <div class="row align-items-center">
+                  <div class="col-auto">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="bulk-edit-use-mes" onchange="toggleBulkEditField('mes')">
+                    </div>
+                  </div>
+                  <div class="col">
+                    <label for="bulk-edit-mes" class="form-label mb-1 text-secondary small">Mes</label>
+                    <select name="mes" id="bulk-edit-mes" class="form-select bg-light border-0" disabled>
+                      <option value="Enero">Enero</option>
+                      <option value="Febrero">Febrero</option>
+                      <option value="Marzo">Marzo</option>
+                      <option value="Abril">Abril</option>
+                      <option value="Mayo">Mayo</option>
+                      <option value="Junio">Junio</option>
+                      <option value="Julio">Julio</option>
+                      <option value="Agosto">Agosto</option>
+                      <option value="Septiembre">Septiembre</option>
+                      <option value="Octubre">Octubre</option>
+                      <option value="Noviembre">Noviembre</option>
+                      <option value="Diciembre">Diciembre</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Categoría, Tag, Se divide -->
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <div class="row align-items-center">
+                  <div class="col-auto">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="bulk-edit-use-categoria" onchange="toggleBulkEditField('categoria')">
+                    </div>
+                  </div>
+                  <div class="col">
+                    <label for="bulk-edit-categoria" class="form-label mb-1 text-secondary small">Categoría</label>
+                    <select name="categoria" id="bulk-edit-categoria" class="form-select bg-light border-0" disabled>
+                      <!-- Options dynamic -->
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 mt-3 mt-md-0">
+                <div class="row align-items-center">
+                  <div class="col-auto">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="bulk-edit-use-tag" onchange="toggleBulkEditField('tag')">
+                    </div>
+                  </div>
+                  <div class="col">
+                    <label for="bulk-edit-tag" class="form-label mb-1 text-secondary small">Tag</label>
+                    <select name="tag" id="bulk-edit-tag" class="form-select bg-light border-0" disabled>
+                      <!-- Options dynamic -->
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 mt-3 mt-md-0">
+                <div class="row align-items-center">
+                  <div class="col-auto">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="bulk-edit-use-se_divide" onchange="toggleBulkEditField('se_divide')">
+                    </div>
+                  </div>
+                  <div class="col">
+                    <label for="bulk-edit-se_divide" class="form-label mb-1 text-secondary small">Se Divide</label>
+                    <select name="se_divide" id="bulk-edit-se_divide" class="form-select bg-light border-0" disabled>
+                      <!-- Options dynamic -->
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gasto x Mes -->
+            <div class="row align-items-center mb-3">
+              <div class="col-auto">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="bulk-edit-use-gasto_x_mes" onchange="toggleBulkEditField('gasto_x_mes')">
+                </div>
+              </div>
+              <div class="col">
+                <label for="bulk-edit-gasto_x_mes" class="form-label mb-1 text-secondary small">Gasto x mes</label>
+                <select name="gasto_x_mes" id="bulk-edit-gasto_x_mes" class="form-select bg-light border-0" disabled>
+                  <!-- Options dynamic -->
+                </select>
+              </div>
+            </div>
+
+          </form>
+          <div id="bulk-edit-output" class="text-center mt-3 small fw-bold"></div>
+        </div>
+        <div class="modal-footer border-0 pt-0 px-4">
+          <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" id="btnBulkEditSubmit" class="btn btn-primary rounded-pill px-4 fw-bold" onclick="submitBulkEdit()">Guardar Cambios</button>
         </div>
       </div>
     </div>

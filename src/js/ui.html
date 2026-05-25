@@ -31,6 +31,12 @@
         editEl.innerHTML = '';
         map[id].forEach(o => editEl.add(new Option(o, o)));
       }
+
+      const bulkEditEl = document.getElementById('bulk-edit-' + id);
+      if (bulkEditEl) {
+        bulkEditEl.innerHTML = '';
+        map[id].forEach(o => bulkEditEl.add(new Option(o, o)));
+      }
     }
     
     // Also fill the bulk duplicate selector if it exists
@@ -1595,6 +1601,125 @@
       setTimeout(() => {
         if (modalBulkDuplicateBS) {
           modalBulkDuplicateBS.hide();
+        }
+        resetSelection();
+        isDataLoaded = false;
+        cargarDatosUnificado();
+      }, 1200);
+    }, err => {
+      out.innerText = "Error: " + err;
+      out.className = "text-center mt-3 small fw-bold text-danger";
+      btn.disabled = false;
+    });
+  }
+
+  let modalBulkEditBS = null;
+
+  function bulkEditar() {
+    if (selectedIds.length === 0) return;
+    
+    document.getElementById('bulk-edit-count-label').innerText = selectedIds.length;
+    
+    // Reset all checkboxes and disable all fields
+    const fields = ['concepto', 'monto', 'tipo_gasto', 'no_mens', 'total_meses', 'forma_pago', 'fecha_cargo', 'fecha_pago', 'mes', 'categoria', 'tag', 'se_divide', 'gasto_x_mes'];
+    fields.forEach(field => {
+      const cb = document.getElementById('bulk-edit-use-' + field);
+      if (cb) cb.checked = false;
+      const inputEl = document.getElementById('bulk-edit-' + field);
+      if (inputEl) inputEl.disabled = true;
+    });
+    
+    // Hide monthly installments group
+    document.getElementById('bulk-edit-mensualidadesGroup').classList.add('hidden-field');
+    
+    // Reset output message
+    const out = document.getElementById('bulk-edit-output');
+    out.innerText = '';
+    out.className = '';
+    document.getElementById('btnBulkEditSubmit').disabled = false;
+    
+    // Show modal using Bootstrap JS API
+    if (!modalBulkEditBS) {
+      modalBulkEditBS = new bootstrap.Modal(document.getElementById('bulkEditModal'));
+    }
+    modalBulkEditBS.show();
+  }
+
+  function toggleBulkEditField(field) {
+    const useCb = document.getElementById('bulk-edit-use-' + field);
+    const inputEl = document.getElementById('bulk-edit-' + field);
+    if (!useCb || !inputEl) return;
+    
+    inputEl.disabled = !useCb.checked;
+    
+    if (field === 'tipo_gasto' || field === 'no_mens' || field === 'total_meses') {
+      toggleBulkEditMensualidades();
+    }
+  }
+
+  function toggleBulkEditMensualidades() {
+    const useTipo = document.getElementById('bulk-edit-use-tipo_gasto').checked;
+    const tipoVal = document.getElementById('bulk-edit-tipo_gasto').value;
+    const useNoMens = document.getElementById('bulk-edit-use-no_mens').checked;
+    const useTotalMeses = document.getElementById('bulk-edit-use-total_meses').checked;
+    
+    const isMens = (useTipo && ['MSI', 'MCI'].includes(tipoVal)) || useNoMens || useTotalMeses;
+    document.getElementById('bulk-edit-mensualidadesGroup').classList.toggle('hidden-field', !isMens);
+  }
+
+  function actualizarBulkEditAbrev() {
+    const cargoEl = document.getElementById('bulk-edit-fecha_cargo');
+    const abrevEl = document.getElementById('bulk-edit-gasto_x_mes');
+    const mesEl = document.getElementById('bulk-edit-mes');
+    if (!cargoEl || !cargoEl.value) return;
+    
+    const f = new Date(cargoEl.value + "T00:00:00");
+    const meses = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
+    const mesesFull = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+    
+    if (abrevEl) abrevEl.value = meses[f.getMonth()];
+    if (mesEl) mesEl.value = mesesFull[f.getMonth()];
+  }
+
+  function submitBulkEdit() {
+    const form = document.getElementById('formBulkEdit');
+    const out = document.getElementById('bulk-edit-output');
+    const btn = document.getElementById('btnBulkEditSubmit');
+    
+    if (!form.checkValidity()) return form.reportValidity();
+    
+    const customFields = {};
+    const fields = ['concepto', 'monto', 'tipo_gasto', 'no_mens', 'total_meses', 'forma_pago', 'fecha_cargo', 'fecha_pago', 'mes', 'categoria', 'tag', 'se_divide', 'gasto_x_mes'];
+    
+    let hasUpdates = false;
+    fields.forEach(field => {
+      const cb = document.getElementById('bulk-edit-use-' + field);
+      if (cb && cb.checked) {
+        const inputEl = document.getElementById('bulk-edit-' + field);
+        if (inputEl) {
+          customFields[field] = inputEl.value;
+          hasUpdates = true;
+        }
+      }
+    });
+    
+    if (!hasUpdates) {
+      out.innerText = "Por favor, selecciona al menos un campo para actualizar.";
+      out.className = "text-center mt-3 small fw-bold text-warning";
+      return;
+    }
+    
+    btn.disabled = true;
+    out.innerText = "Guardando cambios en lote...";
+    out.className = "text-center mt-3 small fw-bold text-muted";
+    
+    API.editGastos(selectedIds, customFields, res => {
+      out.innerText = res;
+      out.className = "text-center mt-3 small fw-bold text-success";
+      
+      setTimeout(() => {
+        if (modalBulkEditBS) {
+          modalBulkEditBS.hide();
         }
         resetSelection();
         isDataLoaded = false;

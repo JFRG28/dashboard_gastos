@@ -262,6 +262,106 @@ function eliminarGastos(ids) {
   return "Se eliminaron " + rowIndicesToDelete.length + " registros correctamente.";
 }
 
+function editarGastos(ids, customFields) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('unificado_v4');
+  if (!sheet) throw new Error("La hoja 'unificado_v4' no existe.");
+  
+  const data = sheet.getDataRange().getValues();
+  const targetIds = ids.map(id => parseInt(id)).filter(id => !isNaN(id));
+  
+  const rowsToUpdate = [];
+  for (let i = 1; i < data.length; i++) {
+    const rowIdNum = parseInt(data[i][0]);
+    if (!isNaN(rowIdNum) && targetIds.includes(rowIdNum)) {
+      rowsToUpdate.push({
+        rowIndex: i + 1,
+        rowData: data[i]
+      });
+    }
+  }
+  
+  if (rowsToUpdate.length === 0) {
+    throw new Error("No se encontraron registros con los IDs proporcionados.");
+  }
+  
+  const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  
+  for (let i = 0; i < rowsToUpdate.length; i++) {
+    const item = rowsToUpdate[i];
+    const row = item.rowData;
+    const rowIndex = item.rowIndex;
+    
+    if (customFields.hasOwnProperty('concepto')) {
+      row[1] = customFields.concepto;
+    }
+    if (customFields.hasOwnProperty('monto')) {
+      row[2] = parseFloat(customFields.monto);
+    }
+    if (customFields.hasOwnProperty('tipo_gasto')) {
+      row[3] = customFields.tipo_gasto;
+    }
+    if (customFields.hasOwnProperty('forma_pago')) {
+      row[4] = customFields.forma_pago;
+    }
+    
+    let fechaCargoVal = row[7];
+    if (customFields.hasOwnProperty('fecha_cargo')) {
+      row[7] = customFields.fecha_cargo || "";
+      fechaCargoVal = customFields.fecha_cargo ? new Date(customFields.fecha_cargo + "T00:00:00") : null;
+    } else if (fechaCargoVal) {
+      if (fechaCargoVal instanceof Date) {
+        // Already a Date object
+      } else {
+        const strVal = String(fechaCargoVal).trim();
+        fechaCargoVal = strVal ? new Date(strVal + "T00:00:00") : null;
+      }
+    } else {
+      fechaCargoVal = null;
+    }
+    
+    if (customFields.hasOwnProperty('fecha_pago')) {
+      row[8] = customFields.fecha_pago || "";
+    }
+    
+    const mesCalculado = (fechaCargoVal && !isNaN(fechaCargoVal.getTime())) ? meses[fechaCargoVal.getMonth()] : "";
+    const anioCalculado = (fechaCargoVal && !isNaN(fechaCargoVal.getTime())) ? fechaCargoVal.getFullYear() : "";
+    
+    if (customFields.hasOwnProperty('mes')) {
+      row[5] = customFields.mes;
+    } else if (customFields.hasOwnProperty('fecha_cargo')) {
+      row[5] = mesCalculado;
+    }
+    
+    if (customFields.hasOwnProperty('fecha_cargo')) {
+      row[6] = anioCalculado;
+    }
+    
+    if (customFields.hasOwnProperty('categoria')) {
+      row[9] = customFields.categoria;
+    }
+    if (customFields.hasOwnProperty('no_mens')) {
+      row[10] = parseInt(customFields.no_mens) || 0;
+    }
+    if (customFields.hasOwnProperty('total_meses')) {
+      row[11] = parseInt(customFields.total_meses) || 0;
+    }
+    if (customFields.hasOwnProperty('tag')) {
+      row[12] = customFields.tag;
+    }
+    if (customFields.hasOwnProperty('se_divide')) {
+      row[13] = customFields.se_divide;
+    }
+    if (customFields.hasOwnProperty('gasto_x_mes')) {
+      row[14] = customFields.gasto_x_mes;
+    }
+    
+    sheet.getRange(rowIndex, 1, 1, row.length).setValues([row]);
+  }
+  
+  return "Se actualizaron " + rowsToUpdate.length + " registros correctamente.";
+}
+
 function duplicarGastos(ids, customFields) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('unificado_v4');
