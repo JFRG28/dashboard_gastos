@@ -415,11 +415,19 @@ function duplicarGastos(ids, customFields) {
     maxId++;
     newRow[0] = maxId;
     
-    // Overwrite mes, anio and gasto_x_mes if customFields are provided
+    // Keep the value of column "Gasto por mes" only for records tagged as "MD" in column "Tag" AND Gasto por mes equals "NA"
+    const tagVal = String(originalRow[12] || '').trim().toUpperCase();
+    const gastoVal = String(originalRow[14] || '').trim().toUpperCase();
+    if (tagVal === 'MD' && gastoVal === 'NA') {
+      newRow[14] = originalRow[14] || "";
+    } else {
+      newRow[14] = (customFields && customFields.gastoXMes) ? customFields.gastoXMes : "";
+    }
+
+    // Overwrite mes and anio if customFields are provided
     if (customFields) {
       newRow[5] = customFields.mes || "";
       newRow[6] = customFields.anio || "";
-      newRow[14] = customFields.gastoXMes || "";
     }
     
     // Set Fecha Cargo and Fecha Pago to blank

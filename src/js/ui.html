@@ -1416,6 +1416,16 @@
     // Update month and abbreviation dropdowns based on the new cargo date
     actualizarAbrev();
 
+    // Keep the value of column "Gasto por mes" only for the records tagged as "MD" in column "Tag" AND Gasto por mes equals "NA"
+    const tagVal = String(item.tag || '').trim().toUpperCase();
+    const gastoVal = String(item.gastoXMes || '').trim().toUpperCase();
+    if (tagVal === 'MD' && gastoVal === 'NA') {
+      const gastoXMesEl = document.getElementById('gasto_x_mes');
+      if (gastoXMesEl) {
+        gastoXMesEl.value = item.gastoXMes || '';
+      }
+    }
+
     // Specific logic for types
     if (['MSI', 'MCI'].includes(tipo)) {
       const current = parseInt(item.noMens) || 0;
