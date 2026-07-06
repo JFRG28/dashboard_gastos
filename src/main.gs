@@ -286,6 +286,7 @@ function editarGastos(ids, customFields) {
   }
   
   const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  const timezone = Session.getScriptTimeZone();
   
   for (let i = 0; i < rowsToUpdate.length; i++) {
     const item = rowsToUpdate[i];
