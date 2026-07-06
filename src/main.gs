@@ -356,6 +356,14 @@ function editarGastos(ids, customFields) {
       row[14] = customFields.gasto_x_mes;
     }
     
+    // Format any remaining Date objects to yyyy-MM-dd strings to prevent timezone shifts when saving
+    if (row[7] instanceof Date) {
+      row[7] = Utilities.formatDate(row[7], timezone, "yyyy-MM-dd");
+    }
+    if (row[8] instanceof Date) {
+      row[8] = Utilities.formatDate(row[8], timezone, "yyyy-MM-dd");
+    }
+    
     sheet.getRange(rowIndex, 1, 1, row.length).setValues([row]);
   }
   
