@@ -13,10 +13,12 @@ function reindexarTodo() {
   const sheet = ss.getSheetByName('unificado_v4');
   if (!sheet) return;
   
+  const dataRange = sheet.getDataRange();
+  const startRow = dataRange.getRow();
   const lastRow = sheet.getLastRow();
-  if (lastRow < 2) return;
+  if (lastRow < startRow + 1) return;
   
-  const idRange = sheet.getRange(2, 1, lastRow - 1, 1);
+  const idRange = sheet.getRange(startRow + 1, 1, lastRow - startRow, 1);
   const ids = idRange.getValues();
   
   for (let i = 0; i < ids.length; i++) {
@@ -53,10 +55,11 @@ function registrarGasto(form) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName('unificado_v4');
   const lastRow = sheet.getLastRow();
+  const startRow = sheet.getDataRange().getRow();
   
   let maxId = 0;
-  if (lastRow > 1) {
-    const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+  if (lastRow >= startRow + 1) {
+    const ids = sheet.getRange(startRow + 1, 1, lastRow - startRow, 1).getValues();
     for (let i = 0; i < ids.length; i++) {
       const val = parseInt(ids[i][0]);
       if (!isNaN(val) && val > maxId) {
@@ -123,7 +126,9 @@ function editarGasto(id, form) {
   const sheet = ss.getSheetByName('unificado_v4');
   if (!sheet) throw new Error("La hoja 'unificado_v4' no existe.");
   
-  const data = sheet.getDataRange().getValues();
+  const dataRange = sheet.getDataRange();
+  const startRow = dataRange.getRow();
+  const data = dataRange.getValues();
   let targetRowIndex = -1;
   
   // Find row matching ID in column 1 (0-indexed 0)
@@ -131,10 +136,10 @@ function editarGasto(id, form) {
     const rowIdNum = parseInt(data[i][0]);
     const targetIdNum = parseInt(id);
     if (!isNaN(rowIdNum) && !isNaN(targetIdNum) && rowIdNum === targetIdNum) {
-      targetRowIndex = i + 1; // Google Sheets row numbers are 1-based
+      targetRowIndex = i + startRow; // Google Sheets row numbers are 1-based relative to the sheet
       break;
     } else if (String(data[i][0]).trim() === String(id).trim()) {
-      targetRowIndex = i + 1;
+      targetRowIndex = i + startRow;
       break;
     }
   }
@@ -177,7 +182,9 @@ function eliminarGasto(id) {
   const sheet = ss.getSheetByName('unificado_v4');
   if (!sheet) throw new Error("La hoja 'unificado_v4' no existe.");
   
-  const data = sheet.getDataRange().getValues();
+  const dataRange = sheet.getDataRange();
+  const startRow = dataRange.getRow();
+  const data = dataRange.getValues();
   let targetRowIndex = -1;
   let deletedId = parseInt(id);
   
@@ -186,11 +193,11 @@ function eliminarGasto(id) {
     const rowIdNum = parseInt(data[i][0]);
     const targetIdNum = parseInt(id);
     if (!isNaN(rowIdNum) && !isNaN(targetIdNum) && rowIdNum === targetIdNum) {
-      targetRowIndex = i + 1; // Google Sheets row numbers are 1-based
+      targetRowIndex = i + startRow;
       deletedId = targetIdNum;
       break;
     } else if (String(data[i][0]).trim() === String(id).trim()) {
-      targetRowIndex = i + 1;
+      targetRowIndex = i + startRow;
       const parsed = parseInt(data[i][0]);
       if (!isNaN(parsed)) {
         deletedId = parsed;
@@ -206,11 +213,14 @@ function eliminarGasto(id) {
   // Delete the row
   sheet.deleteRow(targetRowIndex);
   
+  // Force delete execution to ensure sheet is fully updated before reading new dimensions
+  SpreadsheetApp.flush();
+  
   // Re-sequence IDs: decrement by 1 any ID value that is greater than the deleted ID
   const lastRow = sheet.getLastRow();
-  if (lastRow > 1) {
-    const numRowsToUpdate = lastRow - 1; // Row 2 to lastRow
-    const idRange = sheet.getRange(2, 1, numRowsToUpdate, 1);
+  if (lastRow >= startRow + 1) {
+    const numRowsToUpdate = lastRow - startRow;
+    const idRange = sheet.getRange(startRow + 1, 1, numRowsToUpdate, 1);
     const ids = idRange.getValues();
     
     for (let i = 0; i < ids.length; i++) {
@@ -232,7 +242,9 @@ function eliminarGastos(ids) {
   const sheet = ss.getSheetByName('unificado_v4');
   if (!sheet) throw new Error("La hoja 'unificado_v4' no existe.");
   
-  const data = sheet.getDataRange().getValues();
+  const dataRange = sheet.getDataRange();
+  const startRow = dataRange.getRow();
+  const data = dataRange.getValues();
   const rowIndicesToDelete = [];
   
   // Convert ids to numbers/strings for robust matching
@@ -241,7 +253,7 @@ function eliminarGastos(ids) {
   for (let i = 1; i < data.length; i++) {
     const rowIdNum = parseInt(data[i][0]);
     if (!isNaN(rowIdNum) && targetIds.includes(rowIdNum)) {
-      rowIndicesToDelete.push(i + 1); // Google Sheets row numbers are 1-based
+      rowIndicesToDelete.push(i + startRow);
     }
   }
   
@@ -256,6 +268,9 @@ function eliminarGastos(ids) {
     sheet.deleteRow(rowIndicesToDelete[i]);
   }
   
+  // Force delete execution to ensure sheet is fully updated before reindexing
+  SpreadsheetApp.flush();
+  
   // Reindex everything to guarantee no gaps or duplicate IDs
   reindexarTodo();
   
@@ -267,7 +282,9 @@ function editarGastos(ids, customFields) {
   const sheet = ss.getSheetByName('unificado_v4');
   if (!sheet) throw new Error("La hoja 'unificado_v4' no existe.");
   
-  const data = sheet.getDataRange().getValues();
+  const dataRange = sheet.getDataRange();
+  const startRow = dataRange.getRow();
+  const data = dataRange.getValues();
   const targetIds = ids.map(id => parseInt(id)).filter(id => !isNaN(id));
   
   const rowsToUpdate = [];
@@ -275,7 +292,7 @@ function editarGastos(ids, customFields) {
     const rowIdNum = parseInt(data[i][0]);
     if (!isNaN(rowIdNum) && targetIds.includes(rowIdNum)) {
       rowsToUpdate.push({
-        rowIndex: i + 1,
+        rowIndex: i + startRow,
         rowData: data[i]
       });
     }
