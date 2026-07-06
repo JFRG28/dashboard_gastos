@@ -234,30 +234,38 @@
       const defaultText = (selectId === 'filter-categoria' || selectId === 'filter-forma-pago') ? 'Todas' : 'Todos';
       selectEl.add(new Option(defaultText, ''));
 
-      const prop = selectMap[selectId];
-      const uniqueVals = [...new Set(rawUnificadoData.map(item => item[prop]))]
-        .filter(val => val !== null && val !== undefined && val !== '')
-        .sort((a, b) => {
-          if (typeof a === 'number' && typeof b === 'number') return b - a; // years sorted descending
-          return String(a).localeCompare(String(b), undefined, {numeric: true, sensitivity: 'base'});
+      if (selectId === 'filter-mes') {
+        const mesesFull = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+        mesesFull.forEach(val => {
+          selectEl.add(new Option(val, val));
         });
 
-      uniqueVals.forEach(val => {
-        selectEl.add(new Option(val, val));
-      });
-
-      if (currVal && uniqueVals.map(String).includes(String(currVal))) {
-        selectEl.value = currVal;
-      } else if (selectId === 'filter-anio') {
-        const currentYear = String(new Date().getFullYear());
-        if (uniqueVals.map(String).includes(currentYear)) {
-          selectEl.value = currentYear;
-        }
-      } else if (selectId === 'filter-mes') {
-        const mesesFull = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-        const currentMonth = mesesFull[new Date().getMonth()];
-        if (uniqueVals.map(String).includes(currentMonth)) {
+        if (currVal && mesesFull.includes(currVal)) {
+          selectEl.value = currVal;
+        } else {
+          const currentMonth = mesesFull[new Date().getMonth()];
           selectEl.value = currentMonth;
+        }
+      } else {
+        const prop = selectMap[selectId];
+        const uniqueVals = [...new Set(rawUnificadoData.map(item => item[prop]))]
+          .filter(val => val !== null && val !== undefined && val !== '')
+          .sort((a, b) => {
+            if (typeof a === 'number' && typeof b === 'number') return b - a; // years sorted descending
+            return String(a).localeCompare(String(b), undefined, {numeric: true, sensitivity: 'base'});
+          });
+
+        uniqueVals.forEach(val => {
+          selectEl.add(new Option(val, val));
+        });
+
+        if (currVal && uniqueVals.map(String).includes(String(currVal))) {
+          selectEl.value = currVal;
+        } else if (selectId === 'filter-anio') {
+          const currentYear = String(new Date().getFullYear());
+          if (uniqueVals.map(String).includes(currentYear)) {
+            selectEl.value = currentYear;
+          }
         }
       }
     }
