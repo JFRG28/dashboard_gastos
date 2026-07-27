@@ -130,6 +130,20 @@
     }
   }
 
+  function onMesChange() {
+    const mesEl = document.getElementById('mes');
+    const gastoXMesEl = document.getElementById('gasto_x_mes');
+    if (!mesEl || !gastoXMesEl) return;
+
+    const val = mesEl.value;
+    if (!val) return;
+
+    const abrev = val.substring(0, 3).toUpperCase();
+    if (Array.from(gastoXMesEl.options).some(o => o.value === abrev)) {
+      gastoXMesEl.value = abrev;
+    }
+  }
+
   /* Navigation Functionality */
   function nav(sectionId, el) {
     document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
