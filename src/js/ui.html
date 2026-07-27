@@ -14,6 +14,12 @@
   window.onload = () => {
     const hoy = new Date();
     document.getElementById('fecha_cargo').value = new Date(hoy - (hoy.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+    
+    const monthIdx = hoy.getMonth();
+    const mesesFull = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+    const mesEl = document.getElementById('mes');
+    if (mesEl) mesEl.value = mesesFull[monthIdx];
+
     API.getOptions(opts => { opcionesGlobales = opts; llenarSelectores(opts); });
   };
 
@@ -47,7 +53,23 @@
       opts.abrevs.forEach(o => bulkDupGastoXMes.add(new Option(o, o)));
     }
 
-    actualizarAbrev();
+    // Set default Mes and Gasto x mes to current month
+    const hoy = new Date();
+    const monthIdx = hoy.getMonth();
+    const mesesFull = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+    const mesesAbrev = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
+
+    const mesEl = document.getElementById('mes');
+    if (mesEl) mesEl.value = mesesFull[monthIdx];
+
+    const gastoXMesEl = document.getElementById('gasto_x_mes');
+    if (gastoXMesEl) {
+      const targetAbrev = mesesAbrev[monthIdx];
+      if (Array.from(gastoXMesEl.options).some(o => o.value === targetAbrev)) {
+        gastoXMesEl.value = targetAbrev;
+      }
+    }
+
     if (typeof actualizarEditAbrev === 'function') {
       actualizarEditAbrev();
     }
@@ -85,17 +107,7 @@
   }
 
   function actualizarAbrev() {
-    const cargoEl = document.getElementById('fecha_cargo');
-    if (!cargoEl || !cargoEl.value) return;
-    const f = new Date(cargoEl.value + "T00:00:00");
-    
-    const mesesAbrev = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
-    const el = document.getElementById('gasto_x_mes');
-    if (el) el.value = mesesAbrev[f.getMonth()];
-
-    const mesesFull = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-    const elMes = document.getElementById('mes');
-    if (elMes) elMes.value = mesesFull[f.getMonth()];
+    // Automatic filling of Mes and Gasto x mes based on Fecha de Cargo removed per request
   }
 
   function onCategoriaChange() {
