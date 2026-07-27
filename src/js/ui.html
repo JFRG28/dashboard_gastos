@@ -98,6 +98,26 @@
     if (elMes) elMes.value = mesesFull[f.getMonth()];
   }
 
+  function onCategoriaChange() {
+    const catEl = document.getElementById('categoria');
+    if (!catEl) return;
+    if (catEl.value === 'I') {
+      const tagEl = document.getElementById('tag');
+      const seDivideEl = document.getElementById('se_divide');
+      const gastoXMesEl = document.getElementById('gasto_x_mes');
+
+      if (tagEl && Array.from(tagEl.options).some(o => o.value === 'NA')) {
+        tagEl.value = 'NA';
+      }
+      if (seDivideEl && Array.from(seDivideEl.options).some(o => o.value === 'No')) {
+        seDivideEl.value = 'No';
+      }
+      if (gastoXMesEl && Array.from(gastoXMesEl.options).some(o => o.value === 'NA')) {
+        gastoXMesEl.value = 'NA';
+      }
+    }
+  }
+
   /* Navigation Functionality */
   function nav(sectionId, el) {
     document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
