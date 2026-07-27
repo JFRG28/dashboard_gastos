@@ -18,6 +18,7 @@
   };
 
   function llenarSelectores(opts) {
+    opcionesGlobales = opts;
     const map = {'tipo_gasto': opts.tiposGasto, 'forma_pago': opts.formasPago, 'tag': opts.tags, 'categoria': opts.categorias, 'se_divide': opts.seDivide, 'gasto_x_mes': opts.abrevs};
     for (let id in map) {
       const el = document.getElementById(id);
@@ -49,6 +50,13 @@
     actualizarAbrev();
     if (typeof actualizarEditAbrev === 'function') {
       actualizarEditAbrev();
+    }
+
+    if (typeof populateFilterSelectors === 'function' && rawUnificadoData && rawUnificadoData.length > 0) {
+      populateFilterSelectors();
+    }
+    if (typeof llenarSelectoresWallet === 'function' && rawWalletData && rawWalletData.length > 0) {
+      llenarSelectoresWallet();
     }
   }
 
@@ -211,7 +219,7 @@
     });
   }
 
-  /* Populate Dynamic Dropdowns from Data */
+  /* Populate Dynamic Dropdowns from Data & Master Google Sheet Options */
   function populateFilterSelectors() {
     const selectMap = {
       'filter-categoria': 'categoria',
@@ -222,6 +230,15 @@
       'filter-anio': 'anioCargo',
       'filter-mes': 'mesCargo',
       'filter-gasto-x-mes': 'gastoXMes'
+    };
+
+    const globalOptsMap = {
+      'filter-categoria': 'categorias',
+      'filter-tipo': 'tiposGasto',
+      'filter-forma-pago': 'formasPago',
+      'filter-tag': 'tags',
+      'filter-se-divide': 'seDivide',
+      'filter-gasto-x-mes': 'abrevs'
     };
 
     for (let selectId in selectMap) {
@@ -248,7 +265,13 @@
         }
       } else {
         const prop = selectMap[selectId];
-        const uniqueVals = [...new Set(rawUnificadoData.map(item => item[prop]))]
+        let baseVals = (opcionesGlobales && globalOptsMap[selectId] && opcionesGlobales[globalOptsMap[selectId]])
+          ? [...opcionesGlobales[globalOptsMap[selectId]]]
+          : [];
+        const dataVals = rawUnificadoData.map(item => item[prop]);
+        const combined = [...baseVals, ...dataVals];
+
+        const uniqueVals = [...new Set(combined)]
           .filter(val => val !== null && val !== undefined && val !== '')
           .sort((a, b) => {
             if (typeof a === 'number' && typeof b === 'number') return b - a; // years sorted descending
@@ -1048,54 +1071,84 @@
   }
 
   function llenarSelectoresWallet() {
-    // Unique Tarjetas from rawWalletData
-    const tarjetas = [...new Set(rawWalletData.map(r => r.tarjeta))].sort();
+    // Combine Tarjetas from opcionesGlobales.formasPago and rawWalletData
+    let baseTarjetas = (opcionesGlobales && opcionesGlobales.formasPago) ? [...opcionesGlobales.formasPago] : [];
+    let dataTarjetas = rawWalletData ? rawWalletData.map(r => r.tarjeta) : [];
+    const tarjetas = [...new Set([...baseTarjetas, ...dataTarjetas])]
+      .filter(t => t !== null && t !== undefined && t !== '')
+      .sort((a, b) => String(a).localeCompare(String(b), undefined, {numeric: true, sensitivity: 'base'}));
     
     // Unique Meses from rawWalletData
     const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
     // Fill T1 tarjeta selector
     const selT1Tarjeta = document.getElementById('wallet-t1-tarjeta');
-    selT1Tarjeta.innerHTML = '';
-    tarjetas.forEach(t => selT1Tarjeta.add(new Option(t, t)));
+    if (selT1Tarjeta) {
+      const prevT1 = selT1Tarjeta.value;
+      selT1Tarjeta.innerHTML = '';
+      tarjetas.forEach(t => selT1Tarjeta.add(new Option(t, t)));
+      if (prevT1 && tarjetas.includes(prevT1)) selT1Tarjeta.value = prevT1;
+    }
 
     // Fill T1 mes selector
     const selT1Mes = document.getElementById('wallet-t1-mes');
-    selT1Mes.innerHTML = '';
-    meses.forEach(m => selT1Mes.add(new Option(m, m)));
+    if (selT1Mes) {
+      const prevT1m = selT1Mes.value;
+      selT1Mes.innerHTML = '';
+      meses.forEach(m => selT1Mes.add(new Option(m, m)));
+      if (prevT1m && meses.includes(prevT1m)) selT1Mes.value = prevT1m;
+    }
 
     // Fill T2 mes selector
     const selT2Mes = document.getElementById('wallet-t2-mes');
-    selT2Mes.innerHTML = '';
-    meses.forEach(m => selT2Mes.add(new Option(m, m)));
+    if (selT2Mes) {
+      const prevT2m = selT2Mes.value;
+      selT2Mes.innerHTML = '';
+      meses.forEach(m => selT2Mes.add(new Option(m, m)));
+      if (prevT2m && meses.includes(prevT2m)) selT2Mes.value = prevT2m;
+    }
 
     // Fill Table mes filter
     const selTableMes = document.getElementById('wallet-filter-mes');
-    const prevTableMes = selTableMes.value;
-    selTableMes.innerHTML = '<option value="">Cualquier mes</option>';
-    meses.forEach(m => selTableMes.add(new Option(m, m)));
-    selTableMes.value = prevTableMes;
+    if (selTableMes) {
+      const prevTableMes = selTableMes.value;
+      selTableMes.innerHTML = '<option value="">Cualquier mes</option>';
+      meses.forEach(m => selTableMes.add(new Option(m, m)));
+      if (prevTableMes && meses.includes(prevTableMes)) selTableMes.value = prevTableMes;
+    }
 
     // Fill Modal Edit selectors
     const editTar = document.getElementById('wallet-edit-tarjeta');
-    editTar.innerHTML = '';
-    tarjetas.forEach(t => editTar.add(new Option(t, t)));
+    if (editTar) {
+      const prevEditTar = editTar.value;
+      editTar.innerHTML = '';
+      tarjetas.forEach(t => editTar.add(new Option(t, t)));
+      if (prevEditTar && tarjetas.includes(prevEditTar)) editTar.value = prevEditTar;
+    }
 
     const editMes = document.getElementById('wallet-edit-mes');
-    editMes.innerHTML = '';
-    meses.forEach(m => editMes.add(new Option(m, m)));
+    if (editMes) {
+      const prevEditMes = editMes.value;
+      editMes.innerHTML = '';
+      meses.forEach(m => editMes.add(new Option(m, m)));
+      if (prevEditMes && meses.includes(prevEditMes)) editMes.value = prevEditMes;
+    }
 
     // Fill Modal Add selectors
     const addTar = document.getElementById('wallet-add-tarjeta');
     if (addTar) {
+      const prevAddTar = addTar.value;
       addTar.innerHTML = '';
       tarjetas.forEach(t => addTar.add(new Option(t, t)));
+      if (prevAddTar && tarjetas.includes(prevAddTar)) addTar.value = prevAddTar;
     }
 
     const addMes = document.getElementById('wallet-add-mes');
     if (addMes) {
+      const prevAddMes = addMes.value;
       addMes.innerHTML = '';
       meses.forEach(m => addMes.add(new Option(m, m)));
+      if (prevAddMes && meses.includes(prevAddMes)) addMes.value = prevAddMes;
     }
   }
 
