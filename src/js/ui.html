@@ -668,17 +668,20 @@
   }
 
   function actualizarEditAbrev() {
-    const cargoEl = document.getElementById('edit-fecha_cargo');
-    const abrevEl = document.getElementById('edit-gasto_x_mes');
-    const mesEl = document.getElementById('edit-mes');
-    if (!cargoEl || !cargoEl.value) return;
-    
-    const f = new Date(cargoEl.value + "T00:00:00");
-    const meses = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
-    if (abrevEl) abrevEl.value = meses[f.getMonth()];
+    // Automatic filling of Mes and Gasto x mes from Fecha de Cargo removed
+  }
 
-    const mesesFull = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-    if (mesEl) mesEl.value = mesesFull[f.getMonth()];
+  function onEditMesChange() {
+    const mesEl = document.getElementById('edit-mes');
+    const gastoXMesEl = document.getElementById('edit-gasto_x_mes');
+    if (!mesEl || !gastoXMesEl) return;
+    const val = mesEl.value;
+    if (!val) return;
+
+    const abrev = val.substring(0, 3).toUpperCase();
+    if (Array.from(gastoXMesEl.options).some(o => o.value === abrev)) {
+      gastoXMesEl.value = abrev;
+    }
   }
 
   function submitEditForm() {
@@ -1785,17 +1788,20 @@
   }
 
   function actualizarBulkEditAbrev() {
-    const cargoEl = document.getElementById('bulk-edit-fecha_cargo');
-    const abrevEl = document.getElementById('bulk-edit-gasto_x_mes');
+    // Automatic filling of Mes and Gasto x mes from Fecha de Cargo removed
+  }
+
+  function onBulkEditMesChange() {
     const mesEl = document.getElementById('bulk-edit-mes');
-    if (!cargoEl || !cargoEl.value) return;
-    
-    const f = new Date(cargoEl.value + "T00:00:00");
-    const meses = ["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
-    const mesesFull = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-    
-    if (abrevEl) abrevEl.value = meses[f.getMonth()];
-    if (mesEl) mesEl.value = mesesFull[f.getMonth()];
+    const gastoXMesEl = document.getElementById('bulk-edit-gasto_x_mes');
+    if (!mesEl || !gastoXMesEl) return;
+    const val = mesEl.value;
+    if (!val) return;
+
+    const abrev = val.substring(0, 3).toUpperCase();
+    if (Array.from(gastoXMesEl.options).some(o => o.value === abrev)) {
+      gastoXMesEl.value = abrev;
+    }
   }
 
   function submitBulkEdit() {

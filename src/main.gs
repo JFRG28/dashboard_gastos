@@ -81,7 +81,7 @@ function registrarGasto(form) {
     parseFloat(form.monto), 
     form.tipo_gasto, 
     form.forma_pago,
-    form.mes || mesCalculado, 
+    form.mes || "", 
     anioCalculado, 
     form.fecha_cargo || "",
     form.fecha_pago || "", 
@@ -160,7 +160,7 @@ function editarGasto(id, form) {
     parseFloat(form.monto), 
     form.tipo_gasto, 
     form.forma_pago,
-    form.mes || mesCalculado, 
+    form.mes || "", 
     anioCalculado, 
     form.fecha_cargo || "",
     form.fecha_pago || "", 
@@ -347,8 +347,6 @@ function editarGastos(ids, customFields) {
     
     if (customFields.hasOwnProperty('mes')) {
       row[5] = customFields.mes;
-    } else if (customFields.hasOwnProperty('fecha_cargo')) {
-      row[5] = mesCalculado;
     }
     
     if (customFields.hasOwnProperty('fecha_cargo')) {

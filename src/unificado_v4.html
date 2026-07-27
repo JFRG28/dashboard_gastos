@@ -284,7 +284,7 @@
             <div class="row">
               <div class="col-md-4 mb-3">
                 <label for="edit-fecha_cargo" class="form-label">Fecha de Cargo (Opcional)</label>
-                <input type="date" class="form-control bg-light border-0" id="edit-fecha_cargo" name="fecha_cargo" onchange="actualizarEditAbrev()">
+                <input type="date" class="form-control bg-light border-0" id="edit-fecha_cargo" name="fecha_cargo">
               </div>
               <div class="col-md-4 mb-3">
                 <label for="edit-fecha_pago" class="form-label">Fecha de Pago (Opcional)</label>
@@ -292,7 +292,7 @@
               </div>
               <div class="col-md-4 mb-3">
                 <label for="edit-mes" class="form-label">Mes</label>
-                <select name="mes" id="edit-mes" class="form-select bg-light border-0">
+                <select name="mes" id="edit-mes" class="form-select bg-light border-0" onchange="onEditMesChange()">
                   <option value="Enero">Enero</option>
                   <option value="Febrero">Febrero</option>
                   <option value="Marzo">Marzo</option>
@@ -519,7 +519,7 @@
                   </div>
                   <div class="col">
                     <label for="bulk-edit-fecha_cargo" class="form-label mb-1 text-secondary small">Fecha de Cargo</label>
-                    <input type="date" class="form-control bg-light border-0" id="bulk-edit-fecha_cargo" name="fecha_cargo" onchange="actualizarBulkEditAbrev()" disabled>
+                    <input type="date" class="form-control bg-light border-0" id="bulk-edit-fecha_cargo" name="fecha_cargo" disabled>
                   </div>
                 </div>
               </div>
@@ -545,7 +545,7 @@
                   </div>
                   <div class="col">
                     <label for="bulk-edit-mes" class="form-label mb-1 text-secondary small">Mes</label>
-                    <select name="mes" id="bulk-edit-mes" class="form-select bg-light border-0" disabled>
+                    <select name="mes" id="bulk-edit-mes" class="form-select bg-light border-0" onchange="onBulkEditMesChange()" disabled>
                       <option value="Enero">Enero</option>
                       <option value="Febrero">Febrero</option>
                       <option value="Marzo">Marzo</option>
