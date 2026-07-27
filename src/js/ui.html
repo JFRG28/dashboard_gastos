@@ -144,6 +144,27 @@
     }
   }
 
+  function onConceptoChange() {
+    const conceptoEl = document.getElementById('concepto');
+    if (!conceptoEl) return;
+    const val = conceptoEl.value.trim();
+    if (val.toLowerCase() === 'gasolina') {
+      const catEl = document.getElementById('categoria');
+      const tagEl = document.getElementById('tag');
+      const seDivideEl = document.getElementById('se_divide');
+
+      if (catEl && Array.from(catEl.options).some(o => o.value === 'E')) {
+        catEl.value = 'E';
+      }
+      if (tagEl && Array.from(tagEl.options).some(o => o.value === 'MD')) {
+        tagEl.value = 'MD';
+      }
+      if (seDivideEl && Array.from(seDivideEl.options).some(o => o.value === 'Sí')) {
+        seDivideEl.value = 'Sí';
+      }
+    }
+  }
+
   /* Navigation Functionality */
   function nav(sectionId, el) {
     document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
