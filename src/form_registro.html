@@ -94,3 +94,34 @@
     <div id="output" class="mt-3 text-center"></div>
   </div>
 </div>
+
+<script>
+  function onCategoriaChange() {
+    const catEl = document.getElementById('categoria');
+    if (!catEl) return;
+    if (catEl.value && catEl.value.trim().toUpperCase() === 'I') {
+      const tagEl = document.getElementById('tag');
+      const seDivideEl = document.getElementById('se_divide');
+
+      if (tagEl) {
+        let optNA = Array.from(tagEl.options).find(o => o.value.trim().toUpperCase() === 'NA');
+        if (!optNA) {
+          tagEl.add(new Option('NA', 'NA'));
+          tagEl.value = 'NA';
+        } else {
+          tagEl.value = optNA.value;
+        }
+      }
+
+      if (seDivideEl) {
+        let optNo = Array.from(seDivideEl.options).find(o => o.value.trim().toLowerCase() === 'no');
+        if (!optNo) {
+          seDivideEl.add(new Option('No', 'No'));
+          seDivideEl.value = 'No';
+        } else {
+          seDivideEl.value = optNo.value;
+        }
+      }
+    }
+  }
+</script>
