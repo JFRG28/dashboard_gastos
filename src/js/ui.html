@@ -1,4 +1,65 @@
 <script>
+  /* ===================================================
+     THEME MANAGEMENT (Dark / Light Theme)
+     =================================================== */
+  function getCurrentTheme() {
+    return document.documentElement.getAttribute('data-bs-theme') || 'light';
+  }
+
+  function updateThemeUI(theme) {
+    const btn = document.getElementById('themeToggleBtn');
+    if (!btn) return;
+    
+    if (theme === 'dark') {
+      btn.setAttribute('title', 'Cambiar a tema claro');
+      btn.setAttribute('aria-label', 'Cambiar a tema claro');
+    } else {
+      btn.setAttribute('title', 'Cambiar a tema oscuro');
+      btn.setAttribute('aria-label', 'Cambiar a tema oscuro');
+    }
+  }
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-bs-theme', theme);
+    try {
+      localStorage.setItem('app-theme', theme);
+    } catch (e) {}
+    updateThemeUI(theme);
+  }
+
+  function toggleTheme() {
+    const current = getCurrentTheme();
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+  }
+
+  function initTheme() {
+    let theme = 'light';
+    try {
+      const saved = localStorage.getItem('app-theme');
+      if (saved === 'dark' || saved === 'light') {
+        theme = saved;
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        theme = 'dark';
+      }
+    } catch (e) {}
+    applyTheme(theme);
+  }
+
+  // Sync theme on DOM ready and system changes
+  document.addEventListener('DOMContentLoaded', initTheme);
+  try {
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        try {
+          if (!localStorage.getItem('app-theme')) {
+            applyTheme(e.matches ? 'dark' : 'light');
+          }
+        } catch (err) {}
+      });
+    }
+  } catch (e) {}
+
   let opcionesGlobales = null;
   let rawUnificadoData = [];
   let filteredData = [];
@@ -12,6 +73,7 @@
   let currentSortDir = 'desc';
 
   window.onload = () => {
+    initTheme();
     const hoy = new Date();
     document.getElementById('fecha_cargo').value = new Date(hoy - (hoy.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
     

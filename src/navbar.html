@@ -1,11 +1,20 @@
 <nav class="navbar navbar-expand navbar-dark bg-primary sticky-top mb-3">
-  <div class="container-fluid">
-    <div class="navbar-nav w-100 justify-content-around small">
+  <div class="container-fluid px-2 px-md-3 d-flex align-items-center">
+    <div class="navbar-nav flex-row flex-grow-1 justify-content-around small me-2">
       <a class="nav-link active" onclick="nav('registro', this)">📝 Registro</a>
       <a class="nav-link" onclick="nav('unificado_v4', this)">📊 Unificado</a>
       <a class="nav-link" onclick="nav('cálculos', this)">📈 Cálculos</a>
       <a class="nav-link" onclick="nav('balance', this)">💰 Balance</a>
       <a class="nav-link" onclick="nav('wallet', this)">📱 App wallet</a>
+    </div>
+    <div class="d-flex align-items-center flex-shrink-0 ms-1">
+      <button id="themeToggleBtn" class="theme-toggle-pill" onclick="toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro">
+        <span class="theme-toggle-track">
+          <i class="fa-solid fa-moon moon-icon"></i>
+          <i class="fa-solid fa-sun sun-icon"></i>
+          <span class="theme-toggle-thumb"></span>
+        </span>
+      </button>
     </div>
   </div>
 </nav>
