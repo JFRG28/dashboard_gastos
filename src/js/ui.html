@@ -1249,6 +1249,22 @@
       if (prevTableMes && meses.includes(prevTableMes)) selTableMes.value = prevTableMes;
     }
 
+    // Fill Table anio filter
+    const selTableAnio = document.getElementById('wallet-filter-anio');
+    if (selTableAnio) {
+      const prevTableAnio = selTableAnio.value;
+      let baseAnios = [2024, 2025, 2026, 2027, 2028];
+      let dataAnios = rawWalletData ? rawWalletData.map(r => r.anio) : [];
+      const anios = [...new Set([...baseAnios, ...dataAnios])]
+        .filter(a => a !== null && a !== undefined && a !== '')
+        .map(a => String(a))
+        .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+
+      selTableAnio.innerHTML = '<option value="">Cualquier año</option>';
+      anios.forEach(a => selTableAnio.add(new Option(a, a)));
+      if (prevTableAnio && anios.includes(prevTableAnio)) selTableAnio.value = prevTableAnio;
+    }
+
     // Fill Modal Edit selectors
     const editTar = document.getElementById('wallet-edit-tarjeta');
     if (editTar) {
@@ -1315,13 +1331,16 @@
   }
 
   function filtrarWalletTable() {
-    const searchVal = document.getElementById('wallet-search').value.toLowerCase();
+    const searchVal = document.getElementById('wallet-search').value.toLowerCase().trim();
     const mesVal = document.getElementById('wallet-filter-mes').value;
+    const anioEl = document.getElementById('wallet-filter-anio');
+    const anioVal = anioEl ? anioEl.value : '';
 
     filteredWalletData = rawWalletData.filter(item => {
       const matchSearch = !searchVal || (item.tarjeta && item.tarjeta.toLowerCase().includes(searchVal));
       const matchMes = !mesVal || item.mes === mesVal;
-      return matchSearch && matchMes;
+      const matchAnio = !anioVal || String(item.anio) === String(anioVal);
+      return matchSearch && matchMes && matchAnio;
     });
 
     currentWalletPage = 1;

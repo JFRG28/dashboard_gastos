@@ -58,7 +58,7 @@
 
 <!-- Main Table and Search Card -->
 <div class="card border-0 shadow-sm">
-  <div class="card-header bg-white border-0 py-3 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+  <div class="card-header bg-white border-0 py-3 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
     <div class="d-flex align-items-center gap-2">
       <h5 class="m-0 text-dark fw-bold"><i class="fa-solid fa-wallet text-primary me-2"></i> Registros de Wallet</h5>
       <span class="badge bg-light text-secondary rounded-pill fw-medium me-2" id="wallet-count-badge">0 registros</span>
@@ -66,10 +66,14 @@
     </div>
     
     <!-- Table filters -->
-    <div class="d-flex gap-2 w-100 w-sm-auto">
-      <input type="text" id="wallet-search" class="form-control form-control-sm bg-light border-0" placeholder="Buscar tarjeta..." oninput="filtrarWalletTable()" style="max-width: 200px;">
-      <select id="wallet-filter-mes" class="form-select form-select-sm bg-light border-0" onchange="filtrarWalletTable()" style="max-width: 120px;">
+    <div class="d-flex flex-wrap gap-2 w-100 w-md-auto">
+      <input type="text" id="wallet-search" class="form-control form-control-sm bg-light border-0" placeholder="Buscar tarjeta..." oninput="filtrarWalletTable()" style="min-width: 150px; max-width: 180px;">
+      <select id="wallet-filter-mes" class="form-select form-select-sm bg-light border-0" onchange="filtrarWalletTable()" style="min-width: 120px; max-width: 130px;">
         <option value="">Cualquier mes</option>
+        <!-- Options dynamic -->
+      </select>
+      <select id="wallet-filter-anio" class="form-select form-select-sm bg-light border-0" onchange="filtrarWalletTable()" style="min-width: 115px; max-width: 125px;">
+        <option value="">Cualquier año</option>
         <!-- Options dynamic -->
       </select>
     </div>
