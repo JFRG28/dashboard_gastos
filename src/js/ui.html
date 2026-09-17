@@ -149,6 +149,8 @@
     const out = document.getElementById('output');
     if (!form.checkValidity()) return form.reportValidity();
     
+    checkCategoriaETagNA();
+
     const data = {};
     new FormData(form).forEach((v, k) => data[k] = v);
     document.getElementById('btnSubmit').disabled = true;
@@ -172,10 +174,35 @@
     // Automatic filling of Mes and Gasto x mes based on Fecha de Cargo removed per request
   }
 
+  function checkCategoriaETagNA() {
+    const catEl = document.getElementById('categoria');
+    const tagEl = document.getElementById('tag');
+    const seDivideEl = document.getElementById('se_divide');
+    if (!catEl || !tagEl || !seDivideEl) return;
+
+    const catVal = catEl.value ? catEl.value.trim().toUpperCase() : '';
+    const tagVal = tagEl.value ? tagEl.value.trim().toUpperCase() : '';
+
+    if (catVal === 'E' && tagVal === 'NA') {
+      let optNo = Array.from(seDivideEl.options).find(o => o.value.trim().toLowerCase() === 'no');
+      if (!optNo) {
+        seDivideEl.add(new Option('No', 'No'));
+        seDivideEl.value = 'No';
+      } else {
+        seDivideEl.value = optNo.value;
+      }
+    }
+  }
+
+  function onTagChange() {
+    checkCategoriaETagNA();
+  }
+
   function onCategoriaChange() {
     const catEl = document.getElementById('categoria');
     if (!catEl) return;
-    if (catEl.value && catEl.value.trim().toUpperCase() === 'I') {
+    const catVal = catEl.value ? catEl.value.trim().toUpperCase() : '';
+    if (catVal === 'I') {
       const tagEl = document.getElementById('tag');
       const seDivideEl = document.getElementById('se_divide');
 
@@ -198,6 +225,8 @@
           seDivideEl.value = optNo.value;
         }
       }
+    } else if (catVal === 'E') {
+      checkCategoriaETagNA();
     }
   }
 

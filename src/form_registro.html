@@ -72,7 +72,7 @@
         </div>
         <div class="col-md-4 mb-3">
           <label for="tag" class="form-label">Tag</label>
-          <select name="tag" id="tag" class="form-select">
+          <select name="tag" id="tag" class="form-select" onchange="onTagChange()">
             <option>Cargando...</option>
           </select>
         </div>
@@ -96,10 +96,36 @@
 </div>
 
 <script>
+  function checkCategoriaETagNA() {
+    const catEl = document.getElementById('categoria');
+    const tagEl = document.getElementById('tag');
+    const seDivideEl = document.getElementById('se_divide');
+    if (!catEl || !tagEl || !seDivideEl) return;
+
+    const catVal = catEl.value ? catEl.value.trim().toUpperCase() : '';
+    const tagVal = tagEl.value ? tagEl.value.trim().toUpperCase() : '';
+
+    if (catVal === 'E' && tagVal === 'NA') {
+      let optNo = Array.from(seDivideEl.options).find(o => o.value.trim().toLowerCase() === 'no');
+      if (!optNo) {
+        seDivideEl.add(new Option('No', 'No'));
+        seDivideEl.value = 'No';
+      } else {
+        seDivideEl.value = optNo.value;
+      }
+    }
+  }
+
+  function onTagChange() {
+    checkCategoriaETagNA();
+  }
+
   function onCategoriaChange() {
     const catEl = document.getElementById('categoria');
     if (!catEl) return;
-    if (catEl.value && catEl.value.trim().toUpperCase() === 'I') {
+    const catVal = catEl.value ? catEl.value.trim().toUpperCase() : '';
+
+    if (catVal === 'I') {
       const tagEl = document.getElementById('tag');
       const seDivideEl = document.getElementById('se_divide');
 
@@ -122,6 +148,8 @@
           seDivideEl.value = optNo.value;
         }
       }
+    } else if (catVal === 'E') {
+      checkCategoriaETagNA();
     }
   }
 </script>
