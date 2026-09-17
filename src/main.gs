@@ -130,6 +130,7 @@ function editarGasto(id, form) {
   const startRow = dataRange.getRow();
   const data = dataRange.getValues();
   let targetRowIndex = -1;
+  let targetDataRow = null;
   
   // Find row matching ID in column 1 (0-indexed 0)
   for (let i = 1; i < data.length; i++) {
@@ -137,9 +138,11 @@ function editarGasto(id, form) {
     const targetIdNum = parseInt(id);
     if (!isNaN(rowIdNum) && !isNaN(targetIdNum) && rowIdNum === targetIdNum) {
       targetRowIndex = i + startRow; // Google Sheets row numbers are 1-based relative to the sheet
+      targetDataRow = data[i];
       break;
     } else if (String(data[i][0]).trim() === String(id).trim()) {
       targetRowIndex = i + startRow;
+      targetDataRow = data[i];
       break;
     }
   }
@@ -152,7 +155,27 @@ function editarGasto(id, form) {
   const meses = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
   
   const mesCalculado = (fechaCargo && !isNaN(fechaCargo.getTime())) ? meses[fechaCargo.getMonth()] : "";
-  const anioCalculado = (fechaCargo && !isNaN(fechaCargo.getTime())) ? fechaCargo.getFullYear() : "";
+  
+  // Resolve year: calculate from fecha_cargo, or use form.anio, or fallback to existing year in sheet
+  let anioExistente = "";
+  if (targetDataRow && targetDataRow[6] !== undefined && targetDataRow[6] !== null) {
+    if (targetDataRow[6] instanceof Date) {
+      anioExistente = targetDataRow[6].getFullYear();
+    } else if (typeof targetDataRow[6] === 'number') {
+      anioExistente = Math.round(targetDataRow[6]);
+    } else {
+      anioExistente = String(targetDataRow[6]).trim();
+    }
+  }
+
+  let anioFinal = "";
+  if (fechaCargo && !isNaN(fechaCargo.getTime())) {
+    anioFinal = fechaCargo.getFullYear();
+  } else if (form.anio !== undefined && form.anio !== null && String(form.anio).trim() !== "") {
+    anioFinal = parseInt(form.anio) || String(form.anio).trim();
+  } else if (anioExistente) {
+    anioFinal = anioExistente;
+  }
 
   const filaActualizada = [
     parseInt(id), 
@@ -161,7 +184,7 @@ function editarGasto(id, form) {
     form.tipo_gasto, 
     form.forma_pago,
     form.mes || "", 
-    anioCalculado, 
+    anioFinal, 
     form.fecha_cargo || "",
     form.fecha_pago || "", 
     form.categoria, 
