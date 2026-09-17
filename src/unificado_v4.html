@@ -1,7 +1,7 @@
 <div class="container-fluid py-2">
   <!-- KPI Dashboard Cards -->
   <div class="row g-3 mb-4">
-    <div class="col-12 col-md-6">
+    <div class="col-12 col-md-4">
       <div class="card kpi-card bg-grad-total text-white h-100">
         <div class="card-body d-flex align-items-center">
           <div class="kpi-icon-container me-3 bg-white bg-opacity-25 rounded-circle p-3">
@@ -14,7 +14,7 @@
         </div>
       </div>
     </div>
-    <div class="col-12 col-md-6">
+    <div class="col-12 col-md-4">
       <div class="card kpi-card bg-grad-count text-white h-100">
         <div class="card-body d-flex align-items-center">
           <div class="kpi-icon-container me-3 bg-white bg-opacity-25 rounded-circle p-3">
@@ -23,6 +23,22 @@
           <div>
             <h6 class="card-subtitle mb-1 text-white-50 uppercase-tracking">Registros Encontrados</h6>
             <h3 class="card-title mb-0 fw-bold" id="kpi-total-registros">0</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card kpi-card bg-grad-avg text-white h-100">
+        <div class="card-body d-flex align-items-center">
+          <div class="kpi-icon-container me-3 bg-white bg-opacity-25 rounded-circle p-3">
+            <i class="fa-solid fa-square-check fa-2x"></i>
+          </div>
+          <div>
+            <div class="d-flex align-items-center gap-2">
+              <h6 class="card-subtitle mb-1 text-white-50 uppercase-tracking">Total Seleccionado</h6>
+              <span class="badge bg-white bg-opacity-25 rounded-pill text-white px-2 py-0 mb-1" id="kpi-count-seleccionado" style="font-size: 0.7rem;">0 seleccionados</span>
+            </div>
+            <h3 class="card-title mb-0 fw-bold" id="kpi-total-seleccionado">$0.00</h3>
           </div>
         </div>
       </div>
@@ -155,9 +171,15 @@
     <div id="unificado-table-container" class="d-none">
       <!-- Bulk Actions Bar -->
       <div id="bulk-actions-bar" class="d-none align-items-center justify-content-between p-3 bg-light border-bottom">
-        <div class="d-flex align-items-center">
-          <span class="badge bg-primary rounded-pill me-2 px-2 py-1" id="bulk-select-count">0</span>
-          <span class="text-muted small fw-bold uppercase-tracking">Seleccionados</span>
+        <div class="d-flex align-items-center gap-3">
+          <div class="d-flex align-items-center">
+            <span class="badge bg-primary rounded-pill me-2 px-2 py-1" id="bulk-select-count">0</span>
+            <span class="text-muted small fw-bold uppercase-tracking">Seleccionados</span>
+          </div>
+          <div class="d-flex align-items-center border-start ps-3">
+            <span class="text-muted small me-1">Total:</span>
+            <span class="fw-bold text-primary small" id="bulk-select-total">$0.00</span>
+          </div>
         </div>
         <div>
           <button class="btn btn-outline-primary btn-sm rounded-pill me-2 px-3 fw-bold" onclick="bulkDuplicar()">

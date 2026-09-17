@@ -520,6 +520,50 @@
 
     document.getElementById('kpi-total-gasto').innerText = fmt.format(total);
     document.getElementById('kpi-total-registros').innerText = count;
+    updateSelectedTotal();
+  }
+
+  function updateSelectedTotal() {
+    let totalSelected = 0;
+    if (Array.isArray(selectedIds) && selectedIds.length > 0) {
+      const selectedSet = new Set(selectedIds.map(sid => String(sid).trim()));
+      const sourceList = (rawUnificadoData && rawUnificadoData.length > 0)
+        ? rawUnificadoData
+        : (filteredData || []);
+
+      sourceList.forEach(item => {
+        if (item && item.id !== undefined && item.id !== null) {
+          if (selectedSet.has(String(item.id).trim())) {
+            let m = 0;
+            if (typeof item.monto === 'number') {
+              m = isNaN(item.monto) ? 0 : item.monto;
+            } else if (item.monto) {
+              const cleaned = String(item.monto).replace(/[^0-9.-]/g, '');
+              const parsed = parseFloat(cleaned);
+              m = isNaN(parsed) ? 0 : parsed;
+            }
+            totalSelected += m;
+          }
+        }
+      });
+    }
+
+    const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+    const formatted = fmt.format(totalSelected);
+    const count = selectedIds ? selectedIds.length : 0;
+
+    const kpiSelTotal = document.getElementById('kpi-total-seleccionado');
+    if (kpiSelTotal) {
+      kpiSelTotal.innerText = formatted;
+    }
+    const kpiSelCount = document.getElementById('kpi-count-seleccionado');
+    if (kpiSelCount) {
+      kpiSelCount.innerText = `${count} ${count === 1 ? 'seleccionado' : 'seleccionados'}`;
+    }
+    const bulkTotal = document.getElementById('bulk-select-total');
+    if (bulkTotal) {
+      bulkTotal.innerText = formatted;
+    }
   }
 
   /* Sort Logic */
@@ -613,9 +657,11 @@
       
       const mensDisplay = item.totalMeses > 0 ? `${item.noMens} / ${item.totalMeses}` : '-';
 
+      const isChecked = selectedIds.some(sid => String(sid).trim() === String(item.id).trim());
+
       tr.innerHTML = `
         <td class="text-center">
-          <input type="checkbox" class="row-checkbox" value="${item.id}" ${selectedIds.includes(item.id) ? 'checked' : ''} onclick="toggleSelectRow(${item.id}, this)">
+          <input type="checkbox" class="row-checkbox" value="${item.id}" ${isChecked ? 'checked' : ''} onclick="toggleSelectRow('${item.id}', this)">
         </td>
         <td class="text-center text-secondary small fw-bold">${item.id || '-'}</td>
         <td class="fw-medium">${item.concepto || '-'}</td>
@@ -1797,9 +1843,10 @@
   }
 
   function toggleSelectRow(id, el) {
-    const index = selectedIds.indexOf(id);
+    const strId = String(id).trim();
+    const index = selectedIds.findIndex(sid => String(sid).trim() === strId);
     if (el.checked) {
-      if (index === -1) selectedIds.push(id);
+      if (index === -1) selectedIds.push(strId);
     } else {
       if (index !== -1) selectedIds.splice(index, 1);
       const selectAllBox = document.getElementById('select-all-rows');
@@ -1812,10 +1859,10 @@
     const checkboxes = document.querySelectorAll('#unificado-tbody .row-checkbox');
     checkboxes.forEach(cb => {
       cb.checked = el.checked;
-      const id = parseInt(cb.value);
-      const index = selectedIds.indexOf(id);
+      const strId = String(cb.value).trim();
+      const index = selectedIds.findIndex(sid => String(sid).trim() === strId);
       if (el.checked) {
-        if (index === -1) selectedIds.push(id);
+        if (index === -1) selectedIds.push(strId);
       } else {
         if (index !== -1) selectedIds.splice(index, 1);
       }
@@ -1824,6 +1871,7 @@
   }
 
   function updateBulkActionsBar() {
+    updateSelectedTotal();
     const bar = document.getElementById('bulk-actions-bar');
     const countEl = document.getElementById('bulk-select-count');
     if (!bar || !countEl) return;
