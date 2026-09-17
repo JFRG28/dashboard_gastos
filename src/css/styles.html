@@ -320,6 +320,21 @@
     font-weight: 500;
   }
 
+  /* Filter reset button */
+  .btn-outline-secondary.bg-light,
+  #wallet-btn-reset {
+    background-color: var(--input-bg, #f8f9fa) !important;
+    color: var(--text-muted, #64748b) !important;
+    border: 1px solid transparent !important;
+    transition: all 0.2s ease;
+  }
+  .btn-outline-secondary.bg-light:hover,
+  #wallet-btn-reset:hover {
+    background-color: #e2e8f0 !important;
+    color: #0d6efd !important;
+    border-color: transparent !important;
+  }
+
   /* ===================================================
      DARK THEME OVERRIDES ([data-bs-theme="dark"])
      =================================================== */
@@ -462,6 +477,20 @@
   [data-bs-theme="dark"] .btn-outline-secondary:hover {
     background-color: #334155 !important;
     color: #ffffff !important;
+  }
+  [data-bs-theme="dark"] .btn.bg-light,
+  [data-bs-theme="dark"] .btn-outline-secondary.bg-light,
+  [data-bs-theme="dark"] #wallet-btn-reset {
+    background-color: #0f172a !important;
+    color: #94a3b8 !important;
+    border: 1px solid #334155 !important;
+  }
+  [data-bs-theme="dark"] .btn.bg-light:hover,
+  [data-bs-theme="dark"] .btn-outline-secondary.bg-light:hover,
+  [data-bs-theme="dark"] #wallet-btn-reset:hover {
+    background-color: #1e293b !important;
+    color: #60a5fa !important;
+    border-color: #3b82f6 !important;
   }
 
   /* Dark mode badges */
