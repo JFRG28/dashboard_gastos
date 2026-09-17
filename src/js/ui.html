@@ -139,7 +139,7 @@
     if (typeof populateFilterSelectors === 'function' && rawUnificadoData && rawUnificadoData.length > 0) {
       populateFilterSelectors();
     }
-    if (typeof llenarSelectoresWallet === 'function' && rawWalletData && rawWalletData.length > 0) {
+    if (typeof llenarSelectoresWallet === 'function') {
       llenarSelectoresWallet();
     }
   }
@@ -1176,6 +1176,7 @@
   let walletPageSize = 10;
   let currentWalletPage = 1;
   let walletFilters = {};
+  let walletSearchFiltersInitialized = false;
 
   function cargarWallet() {
     const spinner = document.getElementById('wallet-loading');
@@ -1191,14 +1192,18 @@
       llenarSelectoresWallet();
 
       // Set filter values to match Google Sheets state
-      document.getElementById('wallet-t1-tarjeta').value = walletFilters.t1.tarjeta;
-      document.getElementById('wallet-t1-anio').value = walletFilters.t1.anio;
-      document.getElementById('wallet-t1-mes').value = walletFilters.t1.mes;
-      document.getElementById('wallet-val-t1').innerText = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(walletFilters.t1.total);
+      if (walletFilters && walletFilters.t1) {
+        if (walletFilters.t1.tarjeta) document.getElementById('wallet-t1-tarjeta').value = walletFilters.t1.tarjeta;
+        if (walletFilters.t1.anio) document.getElementById('wallet-t1-anio').value = walletFilters.t1.anio;
+        if (walletFilters.t1.mes) document.getElementById('wallet-t1-mes').value = walletFilters.t1.mes;
+        document.getElementById('wallet-val-t1').innerText = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(walletFilters.t1.total);
+      }
 
-      document.getElementById('wallet-t2-anio').value = walletFilters.t2.anio;
-      document.getElementById('wallet-t2-mes').value = walletFilters.t2.mes;
-      document.getElementById('wallet-val-t2').innerText = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(walletFilters.t2.total);
+      if (walletFilters && walletFilters.t2) {
+        if (walletFilters.t2.anio) document.getElementById('wallet-t2-anio').value = walletFilters.t2.anio;
+        if (walletFilters.t2.mes) document.getElementById('wallet-t2-mes').value = walletFilters.t2.mes;
+        document.getElementById('wallet-val-t2').innerText = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(walletFilters.t2.total);
+      }
 
       // Render Table
       filtrarWalletTable();
@@ -1212,6 +1217,11 @@
   }
 
   function llenarSelectoresWallet() {
+    const now = new Date();
+    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    const currentMonth = meses[now.getMonth()];
+    const currentYear = String(now.getFullYear());
+
     // Combine Tarjetas from opcionesGlobales.formasPago and rawWalletData
     let baseTarjetas = (opcionesGlobales && opcionesGlobales.formasPago) ? [...opcionesGlobales.formasPago] : [];
     let dataTarjetas = rawWalletData ? rawWalletData.map(r => r.tarjeta) : [];
@@ -1219,8 +1229,13 @@
       .filter(t => t !== null && t !== undefined && t !== '')
       .sort((a, b) => String(a).localeCompare(String(b), undefined, {numeric: true, sensitivity: 'base'}));
     
-    // Unique Meses from rawWalletData
-    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    // Unique Years combining base, data, and current year
+    let baseAnios = [2024, 2025, 2026, 2027, 2028, now.getFullYear()];
+    let dataAnios = rawWalletData ? rawWalletData.map(r => r.anio) : [];
+    const anios = [...new Set([...baseAnios, ...dataAnios])]
+      .filter(a => a !== null && a !== undefined && a !== '')
+      .map(a => String(a))
+      .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
 
     // Fill T1 tarjeta selector
     const selT1Tarjeta = document.getElementById('wallet-t1-tarjeta');
@@ -1231,13 +1246,43 @@
       if (prevT1 && tarjetas.includes(prevT1)) selT1Tarjeta.value = prevT1;
     }
 
+    // Fill T1 anio selector
+    const selT1Anio = document.getElementById('wallet-t1-anio');
+    if (selT1Anio) {
+      const prevT1Anio = selT1Anio.value;
+      selT1Anio.innerHTML = '';
+      anios.forEach(a => selT1Anio.add(new Option(a, a)));
+      if (prevT1Anio && anios.includes(prevT1Anio)) {
+        selT1Anio.value = prevT1Anio;
+      } else if (anios.includes(currentYear)) {
+        selT1Anio.value = currentYear;
+      }
+    }
+
     // Fill T1 mes selector
     const selT1Mes = document.getElementById('wallet-t1-mes');
     if (selT1Mes) {
       const prevT1m = selT1Mes.value;
       selT1Mes.innerHTML = '';
       meses.forEach(m => selT1Mes.add(new Option(m, m)));
-      if (prevT1m && meses.includes(prevT1m)) selT1Mes.value = prevT1m;
+      if (prevT1m && meses.includes(prevT1m)) {
+        selT1Mes.value = prevT1m;
+      } else if (meses.includes(currentMonth)) {
+        selT1Mes.value = currentMonth;
+      }
+    }
+
+    // Fill T2 anio selector
+    const selT2Anio = document.getElementById('wallet-t2-anio');
+    if (selT2Anio) {
+      const prevT2Anio = selT2Anio.value;
+      selT2Anio.innerHTML = '';
+      anios.forEach(a => selT2Anio.add(new Option(a, a)));
+      if (prevT2Anio && anios.includes(prevT2Anio)) {
+        selT2Anio.value = prevT2Anio;
+      } else if (anios.includes(currentYear)) {
+        selT2Anio.value = currentYear;
+      }
     }
 
     // Fill T2 mes selector
@@ -1246,32 +1291,45 @@
       const prevT2m = selT2Mes.value;
       selT2Mes.innerHTML = '';
       meses.forEach(m => selT2Mes.add(new Option(m, m)));
-      if (prevT2m && meses.includes(prevT2m)) selT2Mes.value = prevT2m;
+      if (prevT2m && meses.includes(prevT2m)) {
+        selT2Mes.value = prevT2m;
+      } else if (meses.includes(currentMonth)) {
+        selT2Mes.value = currentMonth;
+      }
     }
 
-    // Fill Table mes filter
+    // Fill Table mes filter (loads current month by default)
     const selTableMes = document.getElementById('wallet-filter-mes');
     if (selTableMes) {
       const prevTableMes = selTableMes.value;
       selTableMes.innerHTML = '<option value="">Cualquier mes</option>';
       meses.forEach(m => selTableMes.add(new Option(m, m)));
-      if (prevTableMes && meses.includes(prevTableMes)) selTableMes.value = prevTableMes;
+      if (walletSearchFiltersInitialized) {
+        if (prevTableMes !== undefined && (prevTableMes === '' || meses.includes(prevTableMes))) {
+          selTableMes.value = prevTableMes;
+        }
+      } else {
+        if (meses.includes(currentMonth)) {
+          selTableMes.value = currentMonth;
+        }
+      }
     }
 
-    // Fill Table anio filter
+    // Fill Table anio filter (loads current year by default)
     const selTableAnio = document.getElementById('wallet-filter-anio');
     if (selTableAnio) {
       const prevTableAnio = selTableAnio.value;
-      let baseAnios = [2024, 2025, 2026, 2027, 2028];
-      let dataAnios = rawWalletData ? rawWalletData.map(r => r.anio) : [];
-      const anios = [...new Set([...baseAnios, ...dataAnios])]
-        .filter(a => a !== null && a !== undefined && a !== '')
-        .map(a => String(a))
-        .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
-
       selTableAnio.innerHTML = '<option value="">Cualquier año</option>';
       anios.forEach(a => selTableAnio.add(new Option(a, a)));
-      if (prevTableAnio && anios.includes(prevTableAnio)) selTableAnio.value = prevTableAnio;
+      if (walletSearchFiltersInitialized) {
+        if (prevTableAnio !== undefined && (prevTableAnio === '' || anios.includes(prevTableAnio))) {
+          selTableAnio.value = prevTableAnio;
+        }
+      } else {
+        if (anios.includes(currentYear)) {
+          selTableAnio.value = currentYear;
+        }
+      }
     }
 
     // Fill Modal Edit selectors
@@ -1291,6 +1349,14 @@
       if (prevEditMes && meses.includes(prevEditMes)) editMes.value = prevEditMes;
     }
 
+    const editAnio = document.getElementById('wallet-edit-anio');
+    if (editAnio) {
+      const prevEditAnio = editAnio.value;
+      editAnio.innerHTML = '';
+      anios.forEach(a => editAnio.add(new Option(a, a)));
+      if (prevEditAnio && anios.includes(prevEditAnio)) editAnio.value = prevEditAnio;
+    }
+
     // Fill Modal Add selectors
     const addTar = document.getElementById('wallet-add-tarjeta');
     if (addTar) {
@@ -1305,8 +1371,26 @@
       const prevAddMes = addMes.value;
       addMes.innerHTML = '';
       meses.forEach(m => addMes.add(new Option(m, m)));
-      if (prevAddMes && meses.includes(prevAddMes)) addMes.value = prevAddMes;
+      if (prevAddMes && meses.includes(prevAddMes)) {
+        addMes.value = prevAddMes;
+      } else if (meses.includes(currentMonth)) {
+        addMes.value = currentMonth;
+      }
     }
+
+    const addAnio = document.getElementById('wallet-add-anio');
+    if (addAnio) {
+      const prevAddAnio = addAnio.value;
+      addAnio.innerHTML = '';
+      anios.forEach(a => addAnio.add(new Option(a, a)));
+      if (prevAddAnio && anios.includes(prevAddAnio)) {
+        addAnio.value = prevAddAnio;
+      } else if (anios.includes(currentYear)) {
+        addAnio.value = currentYear;
+      }
+    }
+
+    walletSearchFiltersInitialized = true;
   }
 
   function onWalletFilterChange(tableNum) {
@@ -1337,6 +1421,30 @@
       console.error(err);
       alert("Error al actualizar filtro: " + err);
     });
+  }
+
+  function resetWalletFilters() {
+    const now = new Date();
+    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    const currentMonth = meses[now.getMonth()];
+    const currentYear = String(now.getFullYear());
+
+    const searchEl = document.getElementById('wallet-search');
+    if (searchEl) searchEl.value = '';
+
+    const mesEl = document.getElementById('wallet-filter-mes');
+    if (mesEl) {
+      const exists = Array.from(mesEl.options).some(opt => opt.value === currentMonth);
+      mesEl.value = exists ? currentMonth : '';
+    }
+
+    const anioEl = document.getElementById('wallet-filter-anio');
+    if (anioEl) {
+      const exists = Array.from(anioEl.options).some(opt => opt.value === currentYear);
+      anioEl.value = exists ? currentYear : '';
+    }
+
+    filtrarWalletTable();
   }
 
   function filtrarWalletTable() {
@@ -1517,14 +1625,19 @@
     // Reset values in the add wallet form
     document.getElementById('wallet-add-monto').value = '';
     
-    // Select default values matching T1 calculator filters if possible
+    // Select default values matching T1 calculator filters if possible, or fallback to current
+    const now = new Date();
+    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    const currentMonth = meses[now.getMonth()];
+    const currentYear = String(now.getFullYear());
+
     const t1Tar = document.getElementById('wallet-t1-tarjeta').value;
     const t1Mes = document.getElementById('wallet-t1-mes').value;
     const t1Anio = document.getElementById('wallet-t1-anio').value;
     
-    if (t1Tar) document.getElementById('wallet-add-tarjeta').value = t1Tar;
-    if (t1Mes) document.getElementById('wallet-add-mes').value = t1Mes;
-    if (t1Anio) document.getElementById('wallet-add-anio').value = t1Anio;
+    document.getElementById('wallet-add-tarjeta').value = t1Tar || '';
+    document.getElementById('wallet-add-mes').value = t1Mes || currentMonth;
+    document.getElementById('wallet-add-anio').value = t1Anio || currentYear;
 
     // Reset status outputs
     const out = document.getElementById('wallet-add-output');
